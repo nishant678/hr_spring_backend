@@ -1,5 +1,6 @@
 package com.hr.demo.entity;
 
+import com.hr.demo.enums.HolidayType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -118,8 +119,4 @@ public class HolidayCalendar {
     private String generateHolidayCode() {
         return "HLD" + System.currentTimeMillis() % 100000;
     }
-}
-
-enum HolidayType {
-    NATIONAL, STATE, RELIGIOUS, COMPANY, CUSTOM
 }

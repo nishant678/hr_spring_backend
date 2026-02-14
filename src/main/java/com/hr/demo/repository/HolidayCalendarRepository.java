@@ -38,4 +38,6 @@ public interface HolidayCalendarRepository extends JpaRepository<HolidayCalendar
 
     @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND :employeeId MEMBER OF h.applicableEmployeeIds")
     List<HolidayCalendar> findHolidaysForEmployee(@Param("companyId") Long companyId, @Param("employeeId") Long employeeId);
+
+    List<HolidayCalendar> findByYear(Integer year);
 }

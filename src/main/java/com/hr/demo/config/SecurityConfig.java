@@ -36,14 +36,34 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // Authorization rules
+                // Authorization rules with role-based access
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers(
                                 "/api/auth/login",
-                                "/api/auth/add_users",
+                                "/api/auth/register",
                                 "/api/auth/health",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
                                 "/actuator/health"
                         ).permitAll()
+
+                        // Super Admin endpoints
+                        .requestMatchers("/api/super-admin/**").hasRole("SUPER_ADMIN")
+
+                        // Company Admin endpoints
+                        .requestMatchers("/api/company-admin/**").hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN")
+
+                        // HR Manager endpoints
+                        .requestMatchers("/api/hr/**").hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN", "HR_MANAGER")
+
+                        // Employee endpoints
+                        .requestMatchers("/api/employee/**").hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN", "HR_MANAGER", "EMPLOYEE")
+
+                        // Common authenticated endpoints
+                        .requestMatchers("/api/common/**").authenticated()
+
+                        // Any other request needs authentication
                         .anyRequest().authenticated()
                 )
 

@@ -15,17 +15,20 @@ import java.util.Optional;
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-    Optional<Department> findByDepartmentCode(String departmentCode);
+    //    Optional<Department> findByDepartmentCode(String departmentCode);
 
-    List<Department> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
+    //    List<Department> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
 
-    Page<Department> findByCompanyIdAndIsActive(Long companyId, Boolean isActive, Pageable pageable);
+    //    Page<Department> findByCompanyIdAndIsActive(Long companyId, Boolean isActive, Pageable pageable);
 
-    List<Department> findByCompanyIdAndParentDepartmentIdAndIsActive(Long companyId, Long parentDepartmentId, Boolean isActive);
+    //    @Query("SELECT d FROM Department d WHERE d.companyId = :companyId AND d.parentDepartmentId = :parentDepartmentId AND d.isActive = :isActive")
+//    List<Department> findByCompanyIdAndParentDepartmentIdAndIsActive(@Param("companyId") Long companyId, @Param("parentDepartmentId") Long parentDepartmentId, @Param("isActive") Boolean isActive);
 
-    List<Department> findByCompanyIdAndStatusAndIsActive(Long companyId, DepartmentStatus status, Boolean isActive);
+    //    @Query("SELECT d FROM Department d WHERE d.companyId = :companyId AND d.status = :status AND d.isActive = :isActive")
+//    List<Department> findByCompanyIdAndStatusAndIsActive(@Param("companyId") Long companyId, @Param("status") DepartmentStatus status, @Param("isActive") Boolean isActive);
 
-    List<Department> findByParentDepartmentIdAndIsActive(Long parentDepartmentId, Boolean isActive);
+    //    @Query("SELECT d FROM Department d WHERE d.parentDepartmentId = :parentDepartmentId AND d.isActive = :isActive")
+//    List<Department> findByParentDepartmentIdAndIsActive(@Param("parentDepartmentId") Long parentDepartmentId, @Param("isActive") Boolean isActive);
 
     @Query("SELECT COUNT(d) FROM Department d WHERE d.companyId = :companyId AND d.isActive = true")
     Long countActiveDepartmentsByCompanyId(@Param("companyId") Long companyId);

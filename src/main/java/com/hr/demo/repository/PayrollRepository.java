@@ -15,15 +15,17 @@ import java.util.List;
 @Repository
 public interface PayrollRepository extends JpaRepository<Payroll, Long> {
 
-    List<Payroll> findByEmployeeId(Long employeeId);
+    //    List<Payroll> findByEmployeeId(Long employeeId);
 
-    List<Payroll> findByEmployeeIdAndPayrollMonthAndPayrollYear(Long employeeId, Integer month, Integer year);
+    //    @Query("SELECT p FROM Payroll p WHERE p.employeeId = :employeeId AND p.payrollMonth = :month AND p.payrollYear = :year")
+//    List<Payroll> findByEmployeeIdAndPayrollMonthAndPayrollYear(@Param("employeeId") Long employeeId, @Param("month") Integer month, @Param("year") Integer year);
 
-    List<Payroll> findByCompanyIdAndPayrollMonthAndPayrollYear(Long companyId, Integer month, Integer year);
+    //    @Query("SELECT p FROM Payroll p WHERE p.companyId = :companyId AND p.payrollMonth = :month AND p.payrollYear = :year")
+//    List<Payroll> findByCompanyIdAndPayrollMonthAndPayrollYear(@Param("companyId") Long companyId, @Param("month") Integer month, @Param("year") Integer year);
 
-    Page<Payroll> findByCompanyId(Long companyId, Pageable pageable);
+    //    Page<Payroll> findByCompanyId(Long companyId, Pageable pageable);
 
-    Page<Payroll> findByEmployeeId(Long employeeId, Pageable pageable);
+    //    Page<Payroll> findByEmployeeId(Long employeeId, Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM Payroll p WHERE p.companyId = :companyId AND p.payrollMonth = :month AND p.payrollYear = :year")
     Long countPayrollByCompanyAndMonth(@Param("companyId") Long companyId, @Param("month") Integer month, @Param("year") Integer year);

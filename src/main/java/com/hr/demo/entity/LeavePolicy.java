@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "leave_policies", indexes = {
     @Index(name = "idx_leave_policy_company", columnList = "companyId"),
     @Index(name = "idx_leave_policy_type", columnList = "leaveType"),
-    @Index(name = "idx_leave_policy_status", columnList = "status")
+    @Index(name = "idx_leave_policy_active", columnList = "isActive")
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class LeavePolicy {

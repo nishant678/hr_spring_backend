@@ -20,17 +20,18 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Optional<Employee> findByEmail(String email);
 
-    Optional<Employee> findByEmployeeCode(String employeeCode);
+    //    Optional<Employee> findByEmployeeCode(String employeeCode);
 
-    List<Employee> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
+    //    List<Employee> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
 
-    Page<Employee> findByCompanyIdAndIsActive(Long companyId, Boolean isActive, Pageable pageable);
+    //    Page<Employee> findByCompanyIdAndIsActive(Long companyId, Boolean isActive, Pageable pageable);
 
-    List<Employee> findByCompanyIdAndDepartmentIdAndIsActive(Long companyId, Long departmentId, Boolean isActive);
+    //    @Query("SELECT e FROM Employee e WHERE e.companyId = :companyId AND e.departmentId = :departmentId AND e.isActive = :isActive")
+//    List<Employee> findByCompanyIdAndDepartmentIdAndIsActive(@Param("companyId") Long companyId, @Param("departmentId") Long departmentId, @Param("isActive") Boolean isActive);
 
-    List<Employee> findByCompanyIdAndRoleAndIsActive(Long companyId, EmployeeRole role, Boolean isActive);
+    //    List<Employee> findByCompanyIdAndRoleAndIsActive(Long companyId, EmployeeRole role, Boolean isActive);
 
-    List<Employee> findByCompanyIdAndStatusAndIsActive(Long companyId, EmployeeStatus status, Boolean isActive);
+//    List<Employee> findByCompanyIdAndStatusAndIsActive(Long companyId, EmployeeStatus status, Boolean isActive);
 
     @Query("SELECT e FROM Employee e WHERE e.companyId = :companyId AND e.isActive = true AND e.joiningDate <= :date")
     List<Employee> findActiveEmployeesAsOfDate(@Param("companyId") Long companyId, @Param("date") LocalDate date);

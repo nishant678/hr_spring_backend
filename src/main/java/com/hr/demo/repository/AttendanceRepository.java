@@ -17,17 +17,19 @@ import java.util.Optional;
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
-    List<Attendance> findByEmployeeIdAndDate(Long employeeId, LocalDate date);
+    //    List<Attendance> findByEmployeeIdAndDate(Long employeeId, LocalDate date);
 
-    Optional<Attendance> findByEmployeeIdAndDateAndCheckInIsNotNull(Long employeeId, LocalDate date);
+    //    @Query("SELECT a FROM Attendance a WHERE a.employeeId = :employeeId AND a.date = :date AND a.checkIn IS NOT NULL")
+//    Optional<Attendance> findByEmployeeIdAndDateAndCheckInIsNotNull(@Param("employeeId") Long employeeId, @Param("date") LocalDate date);
 
-    List<Attendance> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate startDate, LocalDate endDate);
+    //    @Query("SELECT a FROM Attendance a WHERE a.employeeId = :employeeId AND a.date BETWEEN :startDate AND :endDate")
+//    List<Attendance> findByEmployeeIdAndDateBetween(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    List<Attendance> findByCompanyIdAndDate(Long companyId, LocalDate date);
+    //    List<Attendance> findByCompanyIdAndDate(Long companyId, LocalDate date);
 
-    List<Attendance> findByCompanyIdAndDateBetween(Long companyId, LocalDate startDate, LocalDate endDate);
+    //    List<Attendance> findByCompanyIdAndDateBetween(Long companyId, LocalDate startDate, LocalDate endDate);
 
-    Page<Attendance> findByCompanyIdAndDate(Long companyId, LocalDate date, Pageable pageable);
+    //    Page<Attendance> findByCompanyIdAndDate(Long companyId, LocalDate date, Pageable pageable);
 
     @Query("SELECT COUNT(a) FROM Attendance a WHERE a.companyId = :companyId AND a.date = :date AND a.status = 'PRESENT'")
     Long countPresentEmployeesByDate(@Param("companyId") Long companyId, @Param("date") LocalDate date);

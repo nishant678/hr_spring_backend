@@ -17,17 +17,19 @@ import java.util.Optional;
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
-    Optional<Company> findByEmail(String email);
+    //    Optional<Company> findByEmail(String email);
 
-    Optional<Company> findByCompanyCode(String companyCode);
+    //    Optional<Company> findByCompanyCode(String companyCode);
 
-    List<Company> findByStatus(CompanyStatus status);
+    //    List<Company> findByStatus(CompanyStatus status);
 
-    Page<Company> findByStatus(CompanyStatus status, Pageable pageable);
+    @Query("SELECT c FROM Company c WHERE c.status = :status")
+    Page<Company> findByStatusWithPagination(@Param("status") CompanyStatus status, Pageable pageable);
 
-    List<Company> findBySubscriptionPlan(SubscriptionPlan subscriptionPlan);
+    //    List<Company> findBySubscriptionPlan(SubscriptionPlan subscriptionPlan);
 
-    Page<Company> findBySubscriptionPlan(SubscriptionPlan subscriptionPlan, Pageable pageable);
+    @Query("SELECT c FROM Company c WHERE c.subscriptionPlan = :plan")
+    Page<Company> findBySubscriptionPlanWithPagination(@Param("plan") SubscriptionPlan plan, Pageable pageable);
 
     @Query("SELECT c FROM Company c WHERE c.subscriptionEnd <= :dateTime AND c.status = 'ACTIVE'")
     List<Company> findCompaniesWithExpiredSubscription(@Param("dateTime") LocalDateTime dateTime);

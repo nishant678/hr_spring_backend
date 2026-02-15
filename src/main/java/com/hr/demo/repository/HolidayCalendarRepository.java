@@ -13,13 +13,14 @@ import java.util.List;
 @Repository
 public interface HolidayCalendarRepository extends JpaRepository<HolidayCalendar, Long> {
 
-    List<HolidayCalendar> findByCompanyIdAndDateBetween(Long companyId, LocalDate startDate, LocalDate endDate);
+    //    List<HolidayCalendar> findByCompanyIdAndDateBetween(Long companyId, LocalDate startDate, LocalDate endDate);
 
-    List<HolidayCalendar> findByCompanyIdAndYear(Long companyId, Integer year);
+    //    List<HolidayCalendar> findByCompanyIdAndYear(Long companyId, Integer year);
 
-    List<HolidayCalendar> findByCompanyIdAndDate(Long companyId, LocalDate date);
+    //    List<HolidayCalendar> findByCompanyIdAndDate(Long companyId, LocalDate date);
 
-    List<HolidayCalendar> findByCompanyIdAndHolidayType(Long companyId, HolidayType holidayType);
+    //    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.holidayType = :holidayType")
+//    List<HolidayCalendar> findByCompanyIdAndHolidayType(@Param("companyId") Long companyId, @Param("holidayType") HolidayType holidayType);
 
     @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.isRecurring = true")
     List<HolidayCalendar> findRecurringHolidaysByCompanyId(@Param("companyId") Long companyId);

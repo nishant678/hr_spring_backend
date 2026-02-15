@@ -76,9 +76,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (keyword != null && !keyword.trim().isEmpty()) {
             companies = companyRepository.searchActiveCompanies(keyword.trim(), pageable);
         } else if (status != null) {
-            companies = companyRepository.findByStatus(status, pageable);
+            companies = companyRepository.findByStatusWithPagination(status, pageable);
         } else if (plan != null) {
-            companies = companyRepository.findBySubscriptionPlan(plan, pageable);
+            companies = companyRepository.findBySubscriptionPlanWithPagination(plan, pageable);
         } else {
             companies = companyRepository.findAll(pageable);
         }
@@ -208,7 +208,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         RevenueDashboardResponse response = new RevenueDashboardResponse();
         
         // Calculate total revenue (simplified calculation based on subscription plans)
-        List<Company> activeCompanies = companyRepository.findByStatus(CompanyStatus.ACTIVE);
+        List<Company> allCompanies = companyRepository.findAll();
+        List<Company> activeCompanies = allCompanies.stream()
+                .filter(c -> c.getStatus() == CompanyStatus.ACTIVE)
+                .collect(Collectors.toList());
         
         double totalRevenue = activeCompanies.stream()
                 .mapToDouble(this::calculateMonthlyRevenue)

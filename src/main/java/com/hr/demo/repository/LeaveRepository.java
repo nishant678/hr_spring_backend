@@ -17,15 +17,18 @@ import java.util.Optional;
 @Repository
 public interface LeaveRepository extends JpaRepository<Leave, Long> {
 
-    List<Leave> findByEmployeeIdAndStatus(Long employeeId, LeaveStatus status);
+    //    @Query("SELECT l FROM Leave l WHERE l.employeeId = :employeeId AND l.status = :status")
+//    List<Leave> findByEmployeeIdAndStatus(@Param("employeeId") Long employeeId, @Param("status") LeaveStatus status);
 
-    List<Leave> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate startDate, LocalDate endDate);
+    //    @Query("SELECT l FROM Leave l WHERE l.employeeId = :employeeId AND l.date BETWEEN :startDate AND :endDate")
+//    List<Leave> findByEmployeeIdAndDateBetween(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    List<Leave> findByCompanyIdAndDateBetween(Long companyId, LocalDate startDate, LocalDate endDate);
+    //    @Query("SELECT l FROM Leave l WHERE l.companyId = :companyId AND l.date BETWEEN :startDate AND :endDate")
+//    List<Leave> findByCompanyIdAndDateBetween(@Param("companyId") Long companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    Page<Leave> findByCompanyId(Long companyId, Pageable pageable);
+    //    Page<Leave> findByCompanyId(Long companyId, Pageable pageable);
 
-    Page<Leave> findByEmployeeId(Long employeeId, Pageable pageable);
+    //    Page<Leave> findByEmployeeId(Long employeeId, Pageable pageable);
 
     @Query("SELECT COUNT(l) FROM Leave l WHERE l.companyId = :companyId AND l.status = 'PENDING'")
     Long countPendingLeavesByCompanyId(@Param("companyId") Long companyId);

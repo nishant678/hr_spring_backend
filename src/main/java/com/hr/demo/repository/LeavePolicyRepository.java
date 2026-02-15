@@ -13,11 +13,12 @@ import java.util.List;
 @Repository
 public interface LeavePolicyRepository extends JpaRepository<LeavePolicy, Long> {
 
-    List<LeavePolicy> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
+    //    List<LeavePolicy> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
 
-    List<LeavePolicy> findByCompanyIdAndLeaveTypeAndIsActive(Long companyId, LeaveType leaveType, Boolean isActive);
+    //    @Query("SELECT lp FROM LeavePolicy lp WHERE lp.companyId = :companyId AND lp.leaveType = :leaveType AND lp.isActive = :isActive")
+//    List<LeavePolicy> findByCompanyIdAndLeaveTypeAndIsActive(@Param("companyId") Long companyId, @Param("leaveType") LeaveType leaveType, @Param("isActive") Boolean isActive);
 
-    List<LeavePolicy> findByCompanyIdAndEffectiveBefore(Long companyId, LocalDateTime dateTime);
+    //    List<LeavePolicy> findByCompanyIdAndEffectiveBefore(Long companyId, LocalDateTime dateTime);
 
     @Query("SELECT lp FROM LeavePolicy lp WHERE lp.companyId = :companyId AND lp.isActive = true AND :employeeRole MEMBER OF lp.applicableRoles")
     List<LeavePolicy> findApplicablePoliciesForRole(@Param("companyId") Long companyId, @Param("employeeRole") String employeeRole);

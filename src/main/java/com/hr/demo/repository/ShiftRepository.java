@@ -17,9 +17,9 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
 
     Optional<Shift> findByShiftCode(String shiftCode);
 
-    List<Shift> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
+    //    List<Shift> findByCompanyIdAndIsActive(Long companyId, Boolean isActive);
 
-    Page<Shift> findByCompanyIdAndIsActive(Long companyId, Boolean isActive, Pageable pageable);
+    //    Page<Shift> findByCompanyIdAndIsActive(Long companyId, Boolean isActive, Pageable pageable);
 
     @Query("SELECT COUNT(s) FROM Shift s WHERE s.companyId = :companyId AND s.isActive = true")
     Long countActiveShiftsByCompanyId(@Param("companyId") Long companyId);

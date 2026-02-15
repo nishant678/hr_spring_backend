@@ -2,7 +2,9 @@ package com.hr.demo.service.impl;
 
 import com.hr.demo.dto.*;
 import com.hr.demo.entity.UserEntity;
-import com.hr.demo.exceptions.UnauthorizedException;
+import com.hr.demo.exceptions.InvalidEmailException;
+import com.hr.demo.exceptions.UserAlreadyExistsException;
+import com.hr.demo.exceptions.WrongPasswordException;
 import com.hr.demo.repository.UserRepository;
 import com.hr.demo.service.AuthService;
 import com.hr.demo.security.JwtService;
@@ -15,30 +17,38 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-     private final   JwtService jwtService;
+    private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public AuthResponse login(LoginRequest request) {
 
+        // 🔍 Check email exists
         var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+                .orElseThrow(() ->
+                        new InvalidEmailException("Email not registered")
+                );
 
+        // 🔐 Check password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid credentials");
+            throw new WrongPasswordException("Wrong password");
         }
 
+        // 🎟 Generate token
         String token = jwtService.generateToken(user.getEmail());
+
         return new AuthResponse(token, user.getEmail(), user.getRole(), user.getId());
     }
 
     @Override
     public AuthResponse register(RegisterRequest request) {
 
+        // 🔍 Already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("Email already registered");
         }
 
+        // 🧑 Create user
         UserEntity user = new UserEntity();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -46,6 +56,7 @@ public class AuthServiceImpl implements AuthService {
 
         var savedUser = userRepository.save(user);
 
+        // 🎟 Auto login after register
         String token = jwtService.generateToken(savedUser.getEmail());
 
         return new AuthResponse(token, savedUser.getEmail(), savedUser.getRole(), savedUser.getId());

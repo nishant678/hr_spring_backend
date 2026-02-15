@@ -22,23 +22,23 @@ public interface HolidayCalendarRepository extends JpaRepository<HolidayCalendar
     //    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.holidayType = :holidayType")
 //    List<HolidayCalendar> findByCompanyIdAndHolidayType(@Param("companyId") Long companyId, @Param("holidayType") HolidayType holidayType);
 
-    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.isRecurring = true")
-    List<HolidayCalendar> findRecurringHolidaysByCompanyId(@Param("companyId") Long companyId);
+    //    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.isRecurring = true")
+//    List<HolidayCalendar> findRecurringHolidaysByCompanyId(@Param("companyId") Long companyId);
 
-    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.isOptional = true AND h.date BETWEEN :startDate AND :endDate")
-    List<HolidayCalendar> findOptionalHolidaysByCompanyIdAndDateRange(@Param("companyId") Long companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    //    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.isOptional = true AND h.date BETWEEN :startDate AND :endDate")
+//    List<HolidayCalendar> findOptionalHolidaysByCompanyIdAndDateRange(@Param("companyId") Long companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.isHalfDay = true AND h.date BETWEEN :startDate AND :endDate")
-    List<HolidayCalendar> findHalfDayHolidaysByCompanyIdAndDateRange(@Param("companyId") Long companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    //    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.isHalfDay = true AND h.date BETWEEN :startDate AND :endDate")
+//    List<HolidayCalendar> findHalfDayHolidaysByCompanyIdAndDateRange(@Param("companyId") Long companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COUNT(h) FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.date BETWEEN :startDate AND :endDate")
-    Long countHolidaysByCompanyIdAndDateRange(@Param("companyId") Long companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    //    @Query("SELECT COUNT(h) FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.date BETWEEN :startDate AND :endDate")
+//    Long countHolidaysByCompanyIdAndDateRange(@Param("companyId") Long companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.applicableToAll = true")
-    List<HolidayCalendar> findApplicableToAllHolidaysByCompanyId(@Param("companyId") Long companyId);
+    //    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND h.applicableToAll = true")
+//    List<HolidayCalendar> findApplicableToAllHolidaysByCompanyId(@Param("companyId") Long companyId);
 
-    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND :employeeId MEMBER OF h.applicableEmployeeIds")
-    List<HolidayCalendar> findHolidaysForEmployee(@Param("companyId") Long companyId, @Param("employeeId") Long employeeId);
+    //    @Query("SELECT h FROM HolidayCalendar h WHERE h.companyId = :companyId AND :employeeId MEMBER OF h.applicableEmployeeIds")
+//    List<HolidayCalendar> findHolidaysForEmployee(@Param("companyId") Long companyId, @Param("employeeId") Long employeeId);
 
-    List<HolidayCalendar> findByYear(Integer year);
+    //    List<HolidayCalendar> findByYear(Integer year);
 }

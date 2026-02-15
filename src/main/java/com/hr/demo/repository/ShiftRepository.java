@@ -21,18 +21,18 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
 
     //    Page<Shift> findByCompanyIdAndIsActive(Long companyId, Boolean isActive, Pageable pageable);
 
-    @Query("SELECT COUNT(s) FROM Shift s WHERE s.companyId = :companyId AND s.isActive = true")
-    Long countActiveShiftsByCompanyId(@Param("companyId") Long companyId);
+    //    @Query("SELECT COUNT(s) FROM Shift s WHERE s.companyId = :companyId AND s.isActive = true")
+//    Long countActiveShiftsByCompanyId(@Param("companyId") Long companyId);
 
-    @Query("SELECT s FROM Shift s WHERE s.companyId = :companyId AND s.isActive = true AND " +
-           "(s.name LIKE %:keyword% OR s.shiftCode LIKE %:keyword%)")
-    Page<Shift> searchShifts(@Param("companyId") Long companyId, @Param("keyword") String keyword, Pageable pageable);
+    //    @Query("SELECT s FROM Shift s WHERE s.companyId = :companyId AND s.isActive = true AND " +
+//           "(s.name LIKE %:keyword% OR s.shiftCode LIKE %:keyword%)")
+//    Page<Shift> searchShifts(@Param("companyId") Long companyId, @Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT e FROM Employee e WHERE e.shiftId = :shiftId AND e.isActive = true")
-    List<Shift> findEmployeesByShiftId(@Param("shiftId") Long shiftId);
+    //    @Query("SELECT e FROM Employee e WHERE e.shiftId = :shiftId AND e.isActive = true")
+//    List<Shift> findEmployeesByShiftId(@Param("shiftId") Long shiftId);
 
-    boolean existsByShiftCode(String shiftCode);
+    //    boolean existsByShiftCode(String shiftCode);
 
-    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM Shift s WHERE s.name = :name AND s.companyId = :companyId AND s.id != :shiftId")
-    boolean existsByNameAndCompanyIdAndIdNot(@Param("name") String name, @Param("companyId") Long companyId, @Param("shiftId") Long shiftId);
+    //    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM Shift s WHERE s.name = :name AND s.companyId = :companyId AND s.id != :shiftId")
+//    boolean existsByNameAndCompanyIdAndIdNot(@Param("name") String name, @Param("companyId") Long companyId, @Param("shiftId") Long shiftId);
 }

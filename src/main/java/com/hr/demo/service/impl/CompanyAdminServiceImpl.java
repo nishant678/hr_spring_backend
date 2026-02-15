@@ -314,7 +314,9 @@ public class CompanyAdminServiceImpl implements CompanyAdminService {
     @Transactional(readOnly = true)
     public List<HolidayResponse> getAllHolidays(Integer year) {
         if (year != null) {
-            return holidayCalendarRepository.findByYear(year).stream()
+            // Filter holidays by year since findByYear method is commented out
+            return holidayCalendarRepository.findAll().stream()
+                    .filter(holiday -> holiday.getDate().getYear() == year)
                     .map(this::convertToHolidayResponse)
                     .collect(Collectors.toList());
         }
@@ -449,8 +451,13 @@ public class CompanyAdminServiceImpl implements CompanyAdminService {
     @Transactional(readOnly = true)
     public CompanyDashboardResponse getCompanyDashboard() {
         CompanyDashboardResponse response = new CompanyDashboardResponse();
-        response.setTotalEmployees(employeeRepository.countActiveEmployeesByCompanyId(1L));
-        response.setActiveEmployees(employeeRepository.countActiveEmployeesByCompanyId(1L));
+        // Calculate active employees manually since countActiveEmployeesByCompanyId method is commented out
+        long activeEmployeesCount = employeeRepository.findAll().stream()
+                .filter(e -> e.getCompanyId() != null && e.getCompanyId().equals(1L) && 
+                           e.getIsActive() != null && e.getIsActive())
+                .count();
+        response.setTotalEmployees(activeEmployeesCount);
+        response.setActiveEmployees(activeEmployeesCount);
         response.setTotalDepartments(departmentRepository.count());
         response.setPresentToday(0L);
         response.setAbsentToday(0L);

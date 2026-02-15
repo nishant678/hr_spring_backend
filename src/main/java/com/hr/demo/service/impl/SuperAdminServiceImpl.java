@@ -33,7 +33,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         log.info("Creating new company: {}", request.getName());
         
         // Check if company already exists
-        if (companyRepository.existsByEmail(request.getEmail())) {
+        if (companyRepository.findAll().stream().anyMatch(c -> c.getEmail().equals(request.getEmail()))) {
             throw new RuntimeException("Company with email " + request.getEmail() + " already exists");
         }
 
@@ -72,18 +72,40 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     public Page<CompanyResponse> getAllCompanies(CompanyStatus status, SubscriptionPlan plan, String keyword, Pageable pageable) {
         log.info("Fetching companies with filters - status: {}, plan: {}, keyword: {}", status, plan, keyword);
         
-        Page<Company> companies;
+        // Use findAll and filter since complex query methods are commented out
+        Page<Company> allCompanies = companyRepository.findAll(pageable);
+        
         if (keyword != null && !keyword.trim().isEmpty()) {
-            companies = companyRepository.searchActiveCompanies(keyword.trim(), pageable);
+            String trimmedKeyword = keyword.trim().toLowerCase();
+            List<Company> filtered = allCompanies.getContent().stream()
+                    .filter(c -> c.getIsActive() != null && c.getIsActive() &&
+                            (c.getName().toLowerCase().contains(trimmedKeyword) ||
+                             c.getEmail().toLowerCase().contains(trimmedKeyword) ||
+                             (c.getCompanyCode() != null && c.getCompanyCode().toLowerCase().contains(trimmedKeyword))))
+                    .collect(Collectors.toList());
+            List<CompanyResponse> responseList = filtered.stream()
+                    .map(this::convertToCompanyResponse)
+                    .collect(Collectors.toList());
+            return new org.springframework.data.domain.PageImpl<>(responseList, pageable, allCompanies.getTotalElements());
         } else if (status != null) {
-            companies = companyRepository.findByStatusWithPagination(status, pageable);
+            List<Company> filtered = allCompanies.getContent().stream()
+                    .filter(c -> c.getStatus() == status)
+                    .collect(Collectors.toList());
+            List<CompanyResponse> responseList = filtered.stream()
+                    .map(this::convertToCompanyResponse)
+                    .collect(Collectors.toList());
+            return new org.springframework.data.domain.PageImpl<>(responseList, pageable, allCompanies.getTotalElements());
         } else if (plan != null) {
-            companies = companyRepository.findBySubscriptionPlanWithPagination(plan, pageable);
-        } else {
-            companies = companyRepository.findAll(pageable);
+            List<Company> filtered = allCompanies.getContent().stream()
+                    .filter(c -> c.getSubscriptionPlan() == plan)
+                    .collect(Collectors.toList());
+            List<CompanyResponse> responseList = filtered.stream()
+                    .map(this::convertToCompanyResponse)
+                    .collect(Collectors.toList());
+            return new org.springframework.data.domain.PageImpl<>(responseList, pageable, allCompanies.getTotalElements());
         }
-
-        return companies.map(this::convertToCompanyResponse);
+        
+        return allCompanies.map(this::convertToCompanyResponse);
     }
 
     @Override
@@ -219,7 +241,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         
         response.setTotalRevenue(totalRevenue);
         response.setTotalActiveCompanies(activeCompanies.size());
-        response.setTotalActiveEmployees(employeeRepository.sumTotalActiveEmployees().intValue());
+        // Calculate total active employees since sumTotalActiveEmployees method is commented out
+        response.setTotalActiveEmployees((int) employeeRepository.findAll().stream()
+                .filter(e -> e.getIsActive() != null && e.getIsActive())
+                .count());
         
         // TODO: Implement more detailed revenue calculations
         
@@ -232,16 +257,20 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         
         SuperAdminDashboardResponse response = new SuperAdminDashboardResponse();
         
-        // Company statistics
-        response.setTotalCompanies(companyRepository.count());
-        response.setActiveCompanies(companyRepository.countByStatus(CompanyStatus.ACTIVE));
-        response.setSuspendedCompanies(companyRepository.countByStatus(CompanyStatus.SUSPENDED));
-        response.setPendingCompanies(companyRepository.countByStatus(CompanyStatus.PENDING));
-        response.setTerminatedCompanies(companyRepository.countByStatus(CompanyStatus.TERMINATED));
+        // Company statistics - use findAll and filter since countByStatus methods are commented out
+        List<Company> allCompanies = companyRepository.findAll();
+        response.setTotalCompanies((long) allCompanies.size());
+        response.setActiveCompanies((long) allCompanies.stream().filter(c -> c.getStatus() == CompanyStatus.ACTIVE).count());
+        response.setSuspendedCompanies((long) allCompanies.stream().filter(c -> c.getStatus() == CompanyStatus.SUSPENDED).count());
+        response.setPendingCompanies((long) allCompanies.stream().filter(c -> c.getStatus() == CompanyStatus.PENDING).count());
+        response.setTerminatedCompanies((long) allCompanies.stream().filter(c -> c.getStatus() == CompanyStatus.TERMINATED).count());
         
         // Employee statistics
-        response.setTotalEmployees(employeeRepository.count());
-        response.setActiveEmployees(employeeRepository.sumTotalActiveEmployees());
+        List<Employee> allEmployees = employeeRepository.findAll();
+        response.setTotalEmployees((long) allEmployees.size());
+        response.setActiveEmployees((long) allEmployees.stream()
+                .filter(e -> e.getIsActive() != null && e.getIsActive())
+                .count());
         
         return response;
     }
@@ -272,7 +301,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         log.info("Getting companies with subscription expiring in {} days", days);
         
         LocalDateTime threshold = LocalDateTime.now().plusDays(days);
-        List<Company> companies = companyRepository.findCompaniesWithExpiredSubscription(threshold);
+        // Use findAll and filter since findCompaniesWithExpiredSubscription method is commented out
+        List<Company> companies = companyRepository.findAll().stream()
+                .filter(c -> c.getSubscriptionEnd() != null && 
+                           c.getSubscriptionEnd().isBefore(threshold) && 
+                           c.getStatus() == CompanyStatus.ACTIVE)
+                .collect(Collectors.toList());
         
         return companies.stream()
                 .map(this::convertToCompanyResponse)
@@ -283,7 +317,14 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     public List<CompanyResponse> getCompaniesAtEmployeeLimit() {
         log.info("Getting companies at employee limit");
         
-        List<Company> companies = companyRepository.findCompaniesAtEmployeeLimit();
+        // Use findAll and filter since findCompaniesAtEmployeeLimit method is commented out
+        List<Company> companies = companyRepository.findAll().stream()
+                .filter(c -> c.getCurrentEmployees() != null && 
+                           c.getMaxEmployees() != null && 
+                           c.getCurrentEmployees() >= c.getMaxEmployees() &&
+                           c.getIsActive() != null && 
+                           c.getIsActive())
+                .collect(Collectors.toList());
         
         return companies.stream()
                 .map(this::convertToCompanyResponse)

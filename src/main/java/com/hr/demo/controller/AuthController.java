@@ -1,8 +1,9 @@
 package com.hr.demo.controller;
 
+import com.hr.demo.dto.AuthResponse;
 import com.hr.demo.dto.CreateUserRequest;
 import com.hr.demo.dto.LoginRequest;
-import com.hr.demo.dto.LoginResponse;
+import com.hr.demo.dto.RegisterRequest;
 import com.hr.demo.service.AuthService;
 import com.hr.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/add_users")

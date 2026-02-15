@@ -1,7 +1,9 @@
 package com.hr.demo.service;
+import com.hr.demo.dto.AuthResponse;
 import com.hr.demo.dto.LoginRequest;
-import com.hr.demo.dto.LoginResponse;
+import com.hr.demo.dto.RegisterRequest;
 
 public interface AuthService {
-    LoginResponse login(LoginRequest request);
+    AuthResponse login(LoginRequest request);
+    AuthResponse register(RegisterRequest request);
 }

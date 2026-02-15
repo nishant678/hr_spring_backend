@@ -1,14 +1,13 @@
 package com.hr.demo.service.impl;
 
-import com.hr.demo.dto.AuthResponse;
-import com.hr.demo.dto.LoginRequest;
-import com.hr.demo.dto.RegisterRequest;
+import com.hr.demo.dto.*;
+import com.hr.demo.entity.UserEntity;
 import com.hr.demo.exceptions.UnauthorizedException;
 import com.hr.demo.repository.UserRepository;
-import com.hr.demo.security.JwtService;
 import com.hr.demo.service.AuthService;
-import com.hr.demo.utils.PasswordEncoderUtil;
+import com.hr.demo.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,7 +15,8 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final JwtService jwtService;
+     private final   JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public AuthResponse login(LoginRequest request) {
@@ -24,7 +24,7 @@ public class AuthServiceImpl implements AuthService {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
-        if (!PasswordEncoderUtil.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("Invalid credentials");
         }
 
@@ -34,22 +34,20 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-        // Check if user already exists
+
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("User with email " + request.getEmail() + " already exists");
+            throw new RuntimeException("User already exists");
         }
 
-        // Create new user
-        var user = new com.hr.demo.entity.UserEntity();
+        UserEntity user = new UserEntity();
         user.setEmail(request.getEmail());
-        user.setPassword(PasswordEncoderUtil.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : "USER");
 
         var savedUser = userRepository.save(user);
 
-        // Generate token for automatic login
         String token = jwtService.generateToken(savedUser.getEmail());
-        
+
         return new AuthResponse(token, savedUser.getEmail(), savedUser.getRole(), savedUser.getId());
     }
 }

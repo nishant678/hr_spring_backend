@@ -1,46 +1,41 @@
 package com.hr.demo.security;
 
-import com.hr.demo.entity.Employee;
-import com.hr.demo.repository.EmployeeRepository;
+import com.hr.demo.entity.UserEntity;
+import com.hr.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email)
             throws UsernameNotFoundException {
 
-        Employee employee = employeeRepository.findByEmail(email)
+        UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("Employee not found with email: " + email)
+                        new UsernameNotFoundException("User not found with email: " + email)
                 );
 
-        List<SimpleGrantedAuthority> authorities = Arrays.asList(
-            new SimpleGrantedAuthority("ROLE_" + employee.getRole().name())
+        List<SimpleGrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_" + user.getRole())
         );
 
         return User.builder()
-                .username(employee.getEmail())
-                .password(employee.getPassword())
+                .username(user.getEmail())
+                .password(user.getPassword())
                 .authorities(authorities)
                 .accountExpired(false)
-                .accountLocked(!employee.getIsActive())
+                .accountLocked(false)
                 .credentialsExpired(false)
-                .disabled(!employee.getIsActive())
+                .disabled(false)
                 .build();
     }
 }

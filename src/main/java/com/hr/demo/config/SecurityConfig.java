@@ -44,19 +44,19 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
 
                         // SUPER ADMIN
-                        .requestMatchers("/api/super-admin/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/super-admin/**").hasRole("MASTER_ADMIN")
 
                         // COMPANY ADMIN
                         .requestMatchers("/api/company-admin/**")
-                        .hasAnyRole("SUPER_ADMIN","COMPANY_ADMIN")
+                        .hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN")
 
                         // HR
                         .requestMatchers("/api/hr/**")
-                        .hasAnyRole("SUPER_ADMIN","COMPANY_ADMIN","HR")
+                        .hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR")
 
                         // EMPLOYEE
                         .requestMatchers("/api/employee/**")
-                        .hasAnyRole("SUPER_ADMIN","COMPANY_ADMIN","HR","EMPLOYEE")
+                        .hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR","EMPLOYEE")
 
                         .anyRequest().authenticated()
                 )

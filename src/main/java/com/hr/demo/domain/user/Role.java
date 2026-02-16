@@ -1,8 +1,20 @@
 package com.hr.demo.domain.user;
 
 public enum Role {
-    SUPER_ADMIN,
-    ADMIN,
+    MASTER_ADMIN,
+    COMPANY_ADMIN,
     HR,
-    EMPLOYEE
+    EMPLOYEE,
+    DISABLED;
+
+    public static Role from(String role) {
+        if (role == null || role.isBlank())
+            return EMPLOYEE;
+
+        try {
+            return Role.valueOf(role.trim().toUpperCase());
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid role: " + role);
+        }
+    }
 }

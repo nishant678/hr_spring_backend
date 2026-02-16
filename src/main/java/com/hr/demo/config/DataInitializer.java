@@ -1,5 +1,6 @@
 package com.hr.demo.config;
 
+import com.hr.demo.domain.user.Role;
 import com.hr.demo.entity.UserEntity;
 import com.hr.demo.repository.UserRepository;
 import com.hr.demo.utils.PasswordEncoderUtil;
@@ -16,14 +17,14 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        boolean superAdminExists = userRepository.existsByRole("SUPER_ADMIN");
+        boolean superAdminExists = userRepository.existsByRole(Role.MASTER_ADMIN);
 
         if (!superAdminExists) {
 
             UserEntity master = new UserEntity();
             master.setEmail("master@system.com");
             master.setPassword(PasswordEncoderUtil.encode("admin123"));
-            master.setRole("SUPER_ADMIN");
+            master.setRole(Role.MASTER_ADMIN);
 
             userRepository.save(master);
 

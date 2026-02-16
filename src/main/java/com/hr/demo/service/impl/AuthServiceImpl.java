@@ -1,5 +1,6 @@
 package com.hr.demo.service.impl;
 
+import com.hr.demo.domain.user.Role;
 import com.hr.demo.dto.*;
 import com.hr.demo.entity.UserEntity;
 import com.hr.demo.exceptions.InvalidEmailException;
@@ -43,22 +44,21 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
 
-        // 🔍 Already exists
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException("Email already registered");
-        }
+        if (userRepository.findByEmail(request.getEmail()).isPresent())
+            throw new RuntimeException("Email already registered");
 
-        // 🧑 Create user
+        Role role = Role.from(request.getRole());
+
         UserEntity user = new UserEntity();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole() != null ? request.getRole() : "USER");
+        user.setRole(role);
 
         var savedUser = userRepository.save(user);
 
-        // 🎟 Auto login after register
         String token = jwtService.generateToken(savedUser.getEmail());
 
         return new AuthResponse(token, savedUser.getEmail(), savedUser.getRole(), savedUser.getId());
     }
+
 }

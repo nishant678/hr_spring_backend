@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 @Configuration
 @EnableWebSecurity
@@ -25,7 +28,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -35,16 +38,42 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+
+                        // PUBLIC APIs
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+
+                        // SUPER ADMIN
+                        .requestMatchers("/api/super-admin/**").hasRole("SUPER_ADMIN")
+
+                        // COMPANY ADMIN
+                        .requestMatchers("/api/company-admin/**")
+                        .hasAnyRole("SUPER_ADMIN","COMPANY_ADMIN")
+
+                        // HR
+                        .requestMatchers("/api/hr/**")
+                        .hasAnyRole("SUPER_ADMIN","COMPANY_ADMIN","HR")
+
+                        // EMPLOYEE
+                        .requestMatchers("/api/employee/**")
+                        .hasAnyRole("SUPER_ADMIN","COMPANY_ADMIN","HR","EMPLOYEE")
+
                         .anyRequest().authenticated()
                 )
 
-                // 🔥 Prevent default 401 popup
+                // 401 Unauthorized
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, e) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            res.getWriter().write("Unauthorized");
+                            res.setContentType("application/json");
+                            res.getWriter().write("{\"error\":\"Unauthorized - Please login\"}");
+                        })
+
+                        // 403 Forbidden
+                        .accessDeniedHandler((req, res, e) -> {
+                            res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            res.setContentType("application/json");
+                            res.getWriter().write("{\"error\":\"Forbidden - No permission\"}");
                         })
                 )
 
@@ -63,7 +92,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
         return config.getAuthenticationManager();
     }
 

@@ -99,7 +99,30 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         return CompanyResponse.builder()
                 .id(company.getId())
                 .companyName(company.getCompanyName())
+                .ownerName(company.getOwnerName())
                 .email(company.getEmail())
+                .phone(company.getPhone())
+                .website(company.getWebsite())
+                .logoUrl(company.getLogoUrl())
+
+                .address(company.getAddress())
+                .city(company.getCity())
+                .state(company.getState())
+                .country(company.getCountry())
+                .postalCode(company.getPostalCode())
+
+                .gstNumber(company.getGstNumber())
+                .panNumber(company.getPanNumber())
+
+                .subscriptionPlan(company.getSubscriptionPlan())
+                .employeeLimit(company.getEmployeeLimit())
+                .subscriptionStart(company.getSubscriptionStart())
+                .subscriptionEnd(company.getSubscriptionEnd())
+
+                .timezone(company.getTimezone())
+                .currency(company.getCurrency())
+                .attendanceMandatory(company.getAttendanceMandatory())
+                .autoEmailReports(company.getAutoEmailReports())
                 .status(company.getStatus())
                 .build();
     }

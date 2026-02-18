@@ -18,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -30,53 +29,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .csrf(csrf -> csrf.disable())
-
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
+        http.csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
-                        // PUBLIC APIs
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-
-                        // SUPER ADMIN
                         .requestMatchers("/api/super-admin/**").hasRole("MASTER_ADMIN")
-
-                        // COMPANY ADMIN
-                        .requestMatchers("/api/company-admin/**")
-                        .hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN")
-
-                        // HR
-                        .requestMatchers("/api/hr/**")
-                        .hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR")
-
-                        // EMPLOYEE
-                        .requestMatchers("/api/employee/**")
-                        .hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR","EMPLOYEE")
-
+                        .requestMatchers("/api/company-admin/**").hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN")
+                        .requestMatchers("/api/hr/**").hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR")
+                        .requestMatchers("/api/employee/**").hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR","EMPLOYEE")
                         .anyRequest().authenticated()
                 )
-
-                // 401 Unauthorized
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((req, res, e) -> {
+                        .authenticationEntryPoint((req,res,e) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"error\":\"Unauthorized - Please login\"}");
                         })
-
-                        // 403 Forbidden
-                        .accessDeniedHandler((req, res, e) -> {
+                        .accessDeniedHandler((req,res,e) -> {
                             res.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"error\":\"Forbidden - No permission\"}");
                         })
                 )
-
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -92,13 +67,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
-        return config.getAuthenticationManager();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }

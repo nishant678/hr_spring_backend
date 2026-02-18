@@ -20,7 +20,7 @@ public class CompanyEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // BASIC INFO
+    // ===== BASIC INFO =====
     @Column(nullable = false)
     private String companyName;
 
@@ -36,18 +36,18 @@ public class CompanyEntity {
     private String website;
     private String logoUrl;
 
-    // ADDRESS
+    // ===== ADDRESS =====
     private String address;
     private String city;
     private String state;
     private String country;
     private String postalCode;
 
-    // LEGAL
+    // ===== LEGAL & TAX =====
     private String gstNumber;
     private String panNumber;
 
-    // SUBSCRIPTION
+    // ===== SUBSCRIPTION =====
     @Enumerated(EnumType.STRING)
     private SubscriptionPlan subscriptionPlan;
 
@@ -56,14 +56,20 @@ public class CompanyEntity {
     private LocalDate subscriptionStart;
     private LocalDate subscriptionEnd;
 
+    // ===== COMPANY SETTINGS =====
+    private String timezone;          // e.g., "Asia/Kolkata"
+    private String currency;          // e.g., "INR"
+    private Boolean attendanceMandatory; // Employees must mark attendance
+    private Boolean autoEmailReports;    // Auto-send attendance reports
+
     @Enumerated(EnumType.STRING)
     private CompanyStatus status;
 
-    // MULTI TENANT RELATION
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    // ===== MULTI-TENANT RELATION =====
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UserEntity> users;
 
-    // AUDIT
+    // ===== AUDIT =====
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -76,6 +82,12 @@ public class CompanyEntity {
 
         if (subscriptionStart == null)
             subscriptionStart = LocalDate.now();
+
+        if (timezone == null)
+            timezone = "Asia/Kolkata"; // default timezone
+
+        if (currency == null)
+            currency = "INR"; // default currency
     }
 
     @PreUpdate

@@ -7,6 +7,10 @@ public enum Role {
     EMPLOYEE,
     DISABLED;
 
+    public String getAuthority() {
+        return "ROLE_" + this.name();
+    }
+
     public static Role from(String role) {
         if (role == null || role.isBlank())
             return EMPLOYEE;

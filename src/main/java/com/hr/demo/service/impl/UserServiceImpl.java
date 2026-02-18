@@ -8,6 +8,7 @@ import com.hr.demo.service.UserService;
 import com.hr.demo.utils.PasswordEncoderUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -16,16 +17,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(CreateUserRequest request) {
-
         Role role = Role.from(request.getRole());
 
-        UserEntity user = new UserEntity(
-                null,
-                request.getEmail(),
-                PasswordEncoderUtil.encode(request.getPassword()),
-                role
-        );
-
+        UserEntity user = UserEntity.builder()
+                .email(request.getEmail())
+                .password(PasswordEncoderUtil.encode(request.getPassword()))
+                .role(role)
+                .build();
         userRepository.save(user);
     }
 }

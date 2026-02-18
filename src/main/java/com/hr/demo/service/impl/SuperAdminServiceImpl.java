@@ -29,12 +29,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ================= CREATE COMPANY =================
     @Override
     public CompanyResponse createCompany(CreateCompanyRequest request) {
 
-        // ---------- VALIDATION ----------
-        if (companyRepository.existsByEmail(request.getCompanyEmail()))
+        if (companyRepository.existsByEmailIgnoreCase(request.getEmail()))
             throw new RuntimeException("Company email already registered");
 
         if (userRepository.existsByEmail(request.getAdminEmail()))
@@ -43,80 +41,52 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (request.getEmployeeLimit() == null || request.getEmployeeLimit() <= 0)
             throw new RuntimeException("Employee limit must be greater than 0");
 
-        // ---------- PLAN DURATION ----------
-        LocalDate startDate = LocalDate.now();
-        LocalDate endDate = calculatePlanExpiry(request.getSubscriptionPlan(), startDate);
+        LocalDate startDate = request.getSubscriptionStart() != null ? request.getSubscriptionStart() : LocalDate.now();
+        LocalDate endDate = request.getSubscriptionEnd() != null ?
+                request.getSubscriptionEnd() :
+                calculatePlanExpiry(request.getSubscriptionPlan(), startDate);
 
-        // ---------- CREATE COMPANY ----------
         CompanyEntity company = CompanyEntity.builder()
                 .companyName(request.getCompanyName())
                 .ownerName(request.getOwnerName())
-                .email(request.getCompanyEmail())
-                .phone(request.getCompanyPhone())
+                .email(request.getEmail())
+                .phone(request.getPhone())
                 .website(request.getWebsite())
                 .logoUrl(request.getLogoUrl())
-
-                // Address
                 .address(request.getAddress())
                 .city(request.getCity())
                 .state(request.getState())
                 .country(request.getCountry())
                 .postalCode(request.getPostalCode())
-
-                // Legal
                 .gstNumber(request.getGstNumber())
                 .panNumber(request.getPanNumber())
-
-                // Subscription
                 .subscriptionPlan(request.getSubscriptionPlan())
-//                .employeeLimit(request.getEmployeeLimit())
+                .employeeLimit(request.getEmployeeLimit())
                 .subscriptionStart(startDate)
                 .subscriptionEnd(endDate)
                 .status(CompanyStatus.ACTIVE)
+                .timezone(request.getTimezone())
+                .currency(request.getCurrency())
+                .attendanceMandatory(request.getAttendanceMandatory())
+                .autoEmailReports(request.getAutoEmailReports())
                 .build();
 
         companyRepository.save(company);
 
-        // ---------- CREATE COMPANY ADMIN ----------
-        UserEntity admin = new UserEntity();
-        admin.setEmail(request.getAdminEmail());
-        admin.setPassword(passwordEncoder.encode(request.getAdminPassword()));
-        admin.setRole(Role.COMPANY_ADMIN);
-        admin.setCompany(company);
+        // Create Admin User
+        UserEntity admin = UserEntity.builder()
+                .email(request.getAdminEmail())
+                .password(passwordEncoder.encode(request.getAdminPassword()))
+                .role(Role.COMPANY_ADMIN)
+                .company(company)
+                .build();
 
         userRepository.save(admin);
 
         return mapToResponse(company);
     }
 
-    // ================= GET ALL =================
-    @Override
-    @Transactional(readOnly = true)
-    public List<CompanyResponse> getAllCompanies() {
-        return companyRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    // ================= DEACTIVATE =================
-    @Override
-    public void deactivateCompany(Long companyId) {
-
-        CompanyEntity company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        company.setStatus(CompanyStatus.INACTIVE);
-
-        // disable all users login
-        if (company.getUsers() != null) {
-            company.getUsers().forEach(user -> user.setRole(Role.DISABLED));
-        }
-    }
-
-    // ================= PLAN EXPIRY LOGIC =================
     private LocalDate calculatePlanExpiry(SubscriptionPlan plan, LocalDate start) {
-
         return switch (plan) {
             case TRIAL -> start.plusDays(7);
             case BASIC -> start.plusMonths(1);
@@ -125,7 +95,6 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         };
     }
 
-    // ================= RESPONSE =================
     private CompanyResponse mapToResponse(CompanyEntity company) {
         return CompanyResponse.builder()
                 .id(company.getId())
@@ -133,5 +102,22 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .email(company.getEmail())
                 .status(company.getStatus())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CompanyResponse> getAllCompanies() {
+        return companyRepository.findAll().stream().map(this::mapToResponse).toList();
+    }
+
+    @Override
+    public void deactivateCompany(Long companyId) {
+        CompanyEntity company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        company.setStatus(CompanyStatus.INACTIVE);
+        if (company.getUsers() != null) {
+            company.getUsers().forEach(user -> user.setRole(Role.DISABLED));
+        }
     }
 }

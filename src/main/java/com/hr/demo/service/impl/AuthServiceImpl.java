@@ -41,24 +41,24 @@ public class AuthServiceImpl implements AuthService {
         return new AuthResponse(token, user.getEmail(), user.getRole(), user.getId());
     }
 
-    @Override
-    public AuthResponse register(RegisterRequest request) {
-
-        if (userRepository.findByEmail(request.getEmail()).isPresent())
-            throw new RuntimeException("Email already registered");
-
-        Role role = Role.from(request.getRole());
-
-        UserEntity user = new UserEntity();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role);
-
-        var savedUser = userRepository.save(user);
-
-        String token = jwtService.generateToken(savedUser.getEmail());
-
-        return new AuthResponse(token, savedUser.getEmail(), savedUser.getRole(), savedUser.getId());
-    }
+//    @Override
+//    public AuthResponse register(RegisterRequest request) {
+//
+//        if (userRepository.findByEmail(request.getEmail()).isPresent())
+//            throw new RuntimeException("Email already registered");
+//
+//        Role role = Role.from(request.getRole());
+//
+//        UserEntity user = new UserEntity();
+//        user.setEmail(request.getEmail());
+//        user.setPassword(passwordEncoder.encode(request.getPassword()));
+//        user.setRole(role);
+//
+//        var savedUser = userRepository.save(user);
+//
+//        String token = jwtService.generateToken(savedUser.getEmail());
+//
+//        return new AuthResponse(token, savedUser.getEmail(), savedUser.getRole(), savedUser.getId());
+//    }
 
 }

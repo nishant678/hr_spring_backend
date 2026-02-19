@@ -34,6 +34,7 @@ public class UserEntity implements UserDetails {
     @JoinColumn(name = "company_id")
     private CompanyEntity company;
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.getAuthority()));

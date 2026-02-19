@@ -3,7 +3,7 @@ package com.hr.demo.service.impl;
 import com.hr.demo.domain.company.CompanyStatus;
 import com.hr.demo.domain.user.Role;
 import com.hr.demo.domain.user.SubscriptionPlan;
-import com.hr.demo.dto.CompanyResponse;
+import com.hr.demo.reaponse.CompanyResponse;
 import com.hr.demo.dto.CreateCompanyRequest;
 import com.hr.demo.entity.CompanyEntity;
 import com.hr.demo.entity.UserEntity;
@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
-
-import static com.hr.demo.domain.user.SubscriptionPlan.*;
 
 @Service
 @RequiredArgsConstructor

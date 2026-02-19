@@ -3,6 +3,7 @@ package com.hr.demo.service.impl;
 import com.hr.demo.domain.user.Role;
 import com.hr.demo.dto.CreateUserRequest;
 import com.hr.demo.entity.UserEntity;
+import com.hr.demo.reaponse.UserResponse;
 import com.hr.demo.repository.UserRepository;
 import com.hr.demo.service.UserService;
 import com.hr.demo.utils.PasswordEncoderUtil;
@@ -16,7 +17,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public void createUser(CreateUserRequest request) {
+    public UserResponse createUser(CreateUserRequest request) {
+
         Role role = Role.from(request.getRole());
 
         UserEntity user = UserEntity.builder()
@@ -24,6 +26,13 @@ public class UserServiceImpl implements UserService {
                 .password(PasswordEncoderUtil.encode(request.getPassword()))
                 .role(role)
                 .build();
-        userRepository.save(user);
+
+        UserEntity savedUser = userRepository.save(user);
+
+        return new UserResponse(
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                savedUser.getId()
+        );
     }
 }

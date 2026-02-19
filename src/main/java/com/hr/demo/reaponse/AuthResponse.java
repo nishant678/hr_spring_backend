@@ -1,11 +1,10 @@
-package com.hr.demo.dto;
+package com.hr.demo.reaponse;
 
 import com.hr.demo.domain.user.Role;
 import lombok.Getter;
 
 @Getter
 public class AuthResponse {
-
     private String token;
     private String email;
     private String role;

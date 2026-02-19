@@ -1,4 +1,4 @@
-package com.hr.demo.dto;
+package com.hr.demo.reaponse;
 import com.hr.demo.domain.company.CompanyStatus;
 import com.hr.demo.domain.user.SubscriptionPlan;
 import lombok.Builder;

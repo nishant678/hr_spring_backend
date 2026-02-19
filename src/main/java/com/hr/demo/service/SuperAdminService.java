@@ -1,6 +1,6 @@
 package com.hr.demo.service;
 import com.hr.demo.dto.CreateCompanyRequest;
-import com.hr.demo.dto.CompanyResponse;
+import com.hr.demo.reaponse.CompanyResponse;
 
 import java.util.List;
 

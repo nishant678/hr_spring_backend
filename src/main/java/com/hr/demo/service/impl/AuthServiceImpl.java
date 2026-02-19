@@ -1,11 +1,9 @@
 package com.hr.demo.service.impl;
 
-import com.hr.demo.domain.user.Role;
 import com.hr.demo.dto.*;
-import com.hr.demo.entity.UserEntity;
 import com.hr.demo.exceptions.InvalidEmailException;
-import com.hr.demo.exceptions.UserAlreadyExistsException;
 import com.hr.demo.exceptions.WrongPasswordException;
+import com.hr.demo.reaponse.AuthResponse;
 import com.hr.demo.repository.UserRepository;
 import com.hr.demo.service.AuthService;
 import com.hr.demo.security.JwtService;

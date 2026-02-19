@@ -1,8 +1,9 @@
 package com.hr.demo.controller;
 
-import com.hr.demo.dto.AuthResponse;
+import com.hr.demo.reaponse.AuthResponse;
 import com.hr.demo.dto.CreateUserRequest;
 import com.hr.demo.dto.LoginRequest;
+import com.hr.demo.reaponse.UserResponse;
 import com.hr.demo.service.AuthService;
 import com.hr.demo.service.UserService;
 import jakarta.validation.Valid;
@@ -25,8 +26,7 @@ public class AuthController {
 
 
     @PostMapping("/add_users")
-    public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
-        userService.createUser(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+        return ResponseEntity.ok(userService.createUser(request));
     }
 }

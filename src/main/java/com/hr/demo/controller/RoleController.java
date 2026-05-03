@@ -1,5 +1,6 @@
 package com.hr.demo.controller;
 
+import com.hr.demo.config.OpenApiConfig;
 import com.hr.demo.dto.CreateRoleRequest;
 import com.hr.demo.dto.UpdateRoleRequest;
 import com.hr.demo.reaponse.RoleResponse;
@@ -8,10 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles")
+@SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
 @RequiredArgsConstructor
 public class RoleController {
 

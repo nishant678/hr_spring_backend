@@ -20,7 +20,7 @@ public class SuperAdminController {
 
     private final SuperAdminService superAdminService;
 
-    @PostMapping("/companies")
+    @PostMapping("/create-companies")
     public CompanyResponse createCompany(@Valid @RequestBody CreateCompanyRequest request) {
         return superAdminService.createCompany(request);
     }

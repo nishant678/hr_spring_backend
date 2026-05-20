@@ -33,6 +33,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (companyRepository.existsByEmailIgnoreCase(request.getEmail()))
             throw new RuntimeException("Company email already registered");
 
+        if (companyRepository.existsByPhone(request.getPhone()))
+            throw new RuntimeException("Company phone number already registered");
+
         if (userRepository.existsByEmail(request.getAdminEmail()))
             throw new RuntimeException("Admin already exists with this email");
 
@@ -71,7 +74,6 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
         companyRepository.save(company);
 
-        // Create Admin User
         UserEntity admin = UserEntity.builder()
                 .email(request.getAdminEmail())
                 .password(passwordEncoder.encode(request.getAdminPassword()))

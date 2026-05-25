@@ -1,6 +1,7 @@
 package com.hr.demo.dto;
 
 import com.hr.demo.domain.user.SubscriptionPlan;
+import com.hr.demo.domain.company.IndustryType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -55,15 +56,18 @@ public class CreateCompanyRequest {
     private SubscriptionPlan subscriptionPlan;
 
     @NotNull
+    private IndustryType industryType;
+
+    @NotNull
     private Integer employeeLimit;
 
     private LocalDate subscriptionStart; // optional, if not provided default to today
-    private LocalDate subscriptionEnd;   // optional
+    private LocalDate subscriptionEnd; // optional
 
-    private String timezone;             // optional
-    private String currency;             // optional
+    private String timezone; // optional
+    private String currency; // optional
     private Boolean attendanceMandatory; // optional
-    private Boolean autoEmailReports;    // optional
+    private Boolean autoEmailReports; // optional
 
     // ===== ADMIN USER =====
     @NotBlank

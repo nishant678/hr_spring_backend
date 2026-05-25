@@ -1,5 +1,7 @@
 package com.hr.demo.reaponse;
+
 import com.hr.demo.domain.company.CompanyStatus;
+import com.hr.demo.domain.company.IndustryType;
 import com.hr.demo.domain.user.SubscriptionPlan;
 import lombok.Builder;
 import lombok.Data;
@@ -40,4 +42,5 @@ public class CompanyResponse {
     private Boolean autoEmailReports;
 
     private CompanyStatus status;
+    private IndustryType industryType;
 }

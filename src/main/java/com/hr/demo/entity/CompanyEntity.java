@@ -1,5 +1,7 @@
 package com.hr.demo.entity;
+
 import com.hr.demo.domain.company.CompanyStatus;
+import com.hr.demo.domain.company.IndustryType;
 import com.hr.demo.domain.user.SubscriptionPlan;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,6 +9,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Entity
 @Table(name = "companies")
 @Getter
@@ -36,6 +39,11 @@ public class CompanyEntity {
     private String website;
     private String logoUrl;
 
+    // ===== INDUSTRY =====
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IndustryType industryType;
+
     // ===== ADDRESS =====
     private String address;
     private String city;
@@ -57,10 +65,10 @@ public class CompanyEntity {
     private LocalDate subscriptionEnd;
 
     // ===== COMPANY SETTINGS =====
-    private String timezone;          // e.g., "Asia/Kolkata"
-    private String currency;          // e.g., "INR"
+    private String timezone; // e.g., "Asia/Kolkata"
+    private String currency; // e.g., "INR"
     private Boolean attendanceMandatory; // Employees must mark attendance
-    private Boolean autoEmailReports;    // Auto-send attendance reports
+    private Boolean autoEmailReports; // Auto-send attendance reports
 
     @Enumerated(EnumType.STRING)
     private CompanyStatus status;
@@ -88,6 +96,9 @@ public class CompanyEntity {
 
         if (currency == null)
             currency = "INR"; // default currency
+        if (industryType == null)
+            industryType = IndustryType.OTHER;
+
     }
 
     @PreUpdate

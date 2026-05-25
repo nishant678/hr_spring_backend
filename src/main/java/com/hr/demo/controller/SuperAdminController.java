@@ -25,6 +25,11 @@ public class SuperAdminController {
         return superAdminService.createCompany(request);
     }
 
+    @PutMapping("/companies/{id}")
+    public CompanyResponse updateCompany(@PathVariable Long id, @Valid @RequestBody CreateCompanyRequest request) {
+        return superAdminService.updateCompany(id, request);
+    }
+
     @GetMapping("/companies")
     public List<CompanyResponse> getCompanies() {
         return superAdminService.getAllCompanies();

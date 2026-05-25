@@ -43,9 +43,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             throw new RuntimeException("Employee limit must be greater than 0");
 
         LocalDate startDate = request.getSubscriptionStart() != null ? request.getSubscriptionStart() : LocalDate.now();
-        LocalDate endDate = request.getSubscriptionEnd() != null ?
-                request.getSubscriptionEnd() :
-                calculatePlanExpiry(request.getSubscriptionPlan(), startDate);
+        LocalDate endDate = request.getSubscriptionEnd() != null ? request.getSubscriptionEnd()
+                : calculatePlanExpiry(request.getSubscriptionPlan(), startDate);
 
         CompanyEntity company = CompanyEntity.builder()
                 .companyName(request.getCompanyName())
@@ -61,6 +60,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .postalCode(request.getPostalCode())
                 .gstNumber(request.getGstNumber())
                 .panNumber(request.getPanNumber())
+                .industryType(request.getIndustryType())
                 .subscriptionPlan(request.getSubscriptionPlan())
                 .employeeLimit(request.getEmployeeLimit())
                 .subscriptionStart(startDate)
@@ -124,7 +124,45 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .attendanceMandatory(company.getAttendanceMandatory())
                 .autoEmailReports(company.getAutoEmailReports())
                 .status(company.getStatus())
+                .industryType(company.getIndustryType())
                 .build();
+    }
+
+    @Override
+    public CompanyResponse updateCompany(Long companyId, CreateCompanyRequest request) {
+        CompanyEntity company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!company.getEmail().equalsIgnoreCase(request.getEmail())
+                && companyRepository.existsByEmailIgnoreCase(request.getEmail()))
+            throw new RuntimeException("Company email already registered");
+
+        company.setCompanyName(request.getCompanyName());
+        company.setOwnerName(request.getOwnerName());
+        company.setEmail(request.getEmail());
+        company.setPhone(request.getPhone());
+        company.setWebsite(request.getWebsite());
+        company.setLogoUrl(request.getLogoUrl());
+        company.setAddress(request.getAddress());
+        company.setCity(request.getCity());
+        company.setState(request.getState());
+        company.setCountry(request.getCountry());
+        company.setPostalCode(request.getPostalCode());
+        company.setGstNumber(request.getGstNumber());
+        company.setPanNumber(request.getPanNumber());
+        company.setSubscriptionPlan(request.getSubscriptionPlan());
+        company.setEmployeeLimit(request.getEmployeeLimit());
+        company.setSubscriptionStart(request.getSubscriptionStart());
+        company.setSubscriptionEnd(request.getSubscriptionEnd());
+        company.setTimezone(request.getTimezone());
+        company.setCurrency(request.getCurrency());
+        company.setAttendanceMandatory(request.getAttendanceMandatory());
+        company.setAutoEmailReports(request.getAutoEmailReports());
+        company.setIndustryType(request.getIndustryType());
+
+        companyRepository.save(company);
+
+        return mapToResponse(company);
     }
 
     @Override

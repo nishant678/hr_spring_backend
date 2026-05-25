@@ -134,13 +134,28 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public void deactivateCompany(Long companyId) {
+    public CompanyResponse deactivateCompany(Long companyId) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        company.setStatus(CompanyStatus.INACTIVE);
-        if (company.getUsers() != null) {
-            company.getUsers().forEach(user -> user.setRole(Role.DISABLED));
+        if (company.getStatus() == CompanyStatus.INACTIVE) {
+            return mapToResponse(company);
         }
+
+        company.setStatus(CompanyStatus.INACTIVE);
+        return mapToResponse(company);
+    }
+
+    @Override
+    public CompanyResponse activateCompany(Long companyId) {
+        CompanyEntity company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (company.getStatus() == CompanyStatus.ACTIVE) {
+            return mapToResponse(company);
+        }
+
+        company.setStatus(CompanyStatus.ACTIVE);
+        return mapToResponse(company);
     }
 }

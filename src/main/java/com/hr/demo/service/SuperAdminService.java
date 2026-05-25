@@ -10,5 +10,7 @@ public interface SuperAdminService {
 
     List<CompanyResponse> getAllCompanies();
 
-    void deactivateCompany(Long companyId);
+    CompanyResponse deactivateCompany(Long companyId);
+
+    CompanyResponse activateCompany(Long companyId);
 }

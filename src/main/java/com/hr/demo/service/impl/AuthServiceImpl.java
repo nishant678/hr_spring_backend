@@ -1,7 +1,9 @@
 package com.hr.demo.service.impl;
 
 import com.hr.demo.dto.*;
+import com.hr.demo.domain.company.CompanyStatus;
 import com.hr.demo.exceptions.InvalidEmailException;
+import com.hr.demo.exceptions.UnauthorizedException;
 import com.hr.demo.exceptions.WrongPasswordException;
 import com.hr.demo.reaponse.AuthResponse;
 import com.hr.demo.repository.UserRepository;
@@ -31,6 +33,10 @@ public class AuthServiceImpl implements AuthService {
         // 🔐 Check password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new WrongPasswordException("Wrong password");
+        }
+
+        if (user.getCompany() != null && user.getCompany().getStatus() != CompanyStatus.ACTIVE) {
+            throw new UnauthorizedException("Company is inactive");
         }
 
         // 🎟 Generate token

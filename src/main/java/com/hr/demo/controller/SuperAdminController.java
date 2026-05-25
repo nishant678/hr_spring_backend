@@ -31,7 +31,12 @@ public class SuperAdminController {
     }
 
     @PutMapping("/companies/{id}/deactivate")
-    public void deactivate(@PathVariable Long id) {
-        superAdminService.deactivateCompany(id);
+    public CompanyResponse deactivate(@PathVariable Long id) {
+        return superAdminService.deactivateCompany(id);
+    }
+
+    @PutMapping("/companies/{id}/activate")
+    public CompanyResponse activate(@PathVariable Long id) {
+        return superAdminService.activateCompany(id);
     }
 }

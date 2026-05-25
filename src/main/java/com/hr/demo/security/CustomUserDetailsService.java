@@ -1,6 +1,7 @@
 package com.hr.demo.security;
 
 import com.hr.demo.entity.UserEntity;
+import com.hr.demo.domain.company.CompanyStatus;
 import com.hr.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +24,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found with email: " + email)
                 );
+
+        if (user.getCompany() != null && user.getCompany().getStatus() != CompanyStatus.ACTIVE) {
+            throw new UsernameNotFoundException("Company is inactive");
+        }
 
         List<SimpleGrantedAuthority> authorities = List.of(
                 new SimpleGrantedAuthority("ROLE_" + user.getRole())

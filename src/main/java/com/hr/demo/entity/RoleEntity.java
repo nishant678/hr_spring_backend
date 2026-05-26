@@ -6,8 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "roles",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"name","company_id"}))
+@Table(name = "roles", uniqueConstraints = @UniqueConstraint(columnNames = { "name", "company_id" }))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +22,9 @@ public class RoleEntity {
     private String name; // HR, Manager, Sales etc
 
     private String description;
+
+    @Column(nullable = false)
+    private boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)

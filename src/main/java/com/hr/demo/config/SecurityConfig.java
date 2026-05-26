@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -33,34 +34,34 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                                "/swagger-ui.html")
+                        .permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/super-admin/**").hasRole("MASTER_ADMIN")
-                        .requestMatchers("/api/company-admin/**").hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN")
-                        .requestMatchers("/api/hr/**").hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR")
-                        .requestMatchers("/api/employee/**").hasAnyRole("MASTER_ADMIN","COMPANY_ADMIN","HR","EMPLOYEE")
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api/company-admin/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN")
+                        .requestMatchers("/api/roles/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN")
+                        .requestMatchers("/api/hr/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR")
+                        .requestMatchers("/api/employee/**")
+                        .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
+                        .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((req,res,e) -> {
+                        .authenticationEntryPoint((req, res, e) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"error\":\"Unauthorized - Please login\"}");
                         })
-                        .accessDeniedHandler((req,res,e) -> {
+                        .accessDeniedHandler((req, res, e) -> {
                             res.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"error\":\"Forbidden - No permission\"}");
-                        })
-                )
+                        }))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -76,7 +77,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -86,7 +89,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://127.0.0.1:3000", "https://*.onrender.com"));
+        configuration.setAllowedOriginPatterns(
+                List.of("http://localhost:3000", "http://127.0.0.1:3000", "https://*.onrender.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

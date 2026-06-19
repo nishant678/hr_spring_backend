@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
@@ -16,6 +17,8 @@ public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
     boolean existsByNameIgnoreCaseAndCompanyId(String name, Long companyId);
 
     List<RoleEntity> findAllByCompanyId(Long companyId);
+
+    Optional<RoleEntity> findByIdAndCompany_Id(Long id, Long companyId);
 
     @Query("SELECT r FROM RoleEntity r WHERE r.company.id = :companyId " +
             "AND (:search IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :search, '%')) " +

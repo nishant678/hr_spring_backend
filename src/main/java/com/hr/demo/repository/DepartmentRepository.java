@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DepartmentRepository extends JpaRepository<DepartmentEntity, Long> {
@@ -16,6 +17,8 @@ public interface DepartmentRepository extends JpaRepository<DepartmentEntity, Lo
     boolean existsByNameIgnoreCaseAndCompanyId(String name, Long companyId);
 
     List<DepartmentEntity> findAllByCompanyId(Long companyId);
+
+    Optional<DepartmentEntity> findByIdAndCompany_Id(Long id, Long companyId);
 
     @Query("SELECT d FROM DepartmentEntity d WHERE d.company.id = :companyId " +
             "AND (:search IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) " +

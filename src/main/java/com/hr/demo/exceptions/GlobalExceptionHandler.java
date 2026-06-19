@@ -4,10 +4,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -48,6 +50,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<?> handleBadRequest(BadRequestException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex) {
+        String msg = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        return build(HttpStatus.BAD_REQUEST, msg);
     }
 
     @ExceptionHandler(RuntimeException.class)

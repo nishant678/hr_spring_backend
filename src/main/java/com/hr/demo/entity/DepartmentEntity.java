@@ -18,9 +18,10 @@ public class DepartmentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String name;
 
+    @Column(columnDefinition = "text")
     private String description;
 
     @Column(nullable = false)

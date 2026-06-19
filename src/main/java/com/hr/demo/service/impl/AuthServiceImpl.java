@@ -42,7 +42,8 @@ public class AuthServiceImpl implements AuthService {
         // 🎟 Generate token
         String token = jwtService.generateToken(user.getEmail());
 
-        return new AuthResponse(token, user.getEmail(), user.getRole(), user.getId());
+        Long companyId = user.getCompany() != null ? user.getCompany().getId() : null;
+        return new AuthResponse(token, user.getEmail(), user.getRole(), user.getId(), companyId);
     }
 
 //    @Override

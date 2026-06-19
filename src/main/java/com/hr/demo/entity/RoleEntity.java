@@ -18,9 +18,10 @@ public class RoleEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name; // HR, Manager, Sales etc
+    @Column(nullable = false, columnDefinition = "text")
+    private String name;
 
+    @Column(columnDefinition = "text")
     private String description;
 
     @Column(nullable = false)

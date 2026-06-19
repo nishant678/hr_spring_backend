@@ -14,15 +14,21 @@ import java.util.Optional;
 @Repository
 public interface DesignationRepository extends JpaRepository<DesignationEntity, Long> {
 
-    boolean existsByNameIgnoreCaseAndCompanyId(String name, Long companyId);
+    @Query(value = "SELECT COUNT(*) > 0 FROM designations d WHERE LOWER(CAST(d.name AS text)) = LOWER(CAST(:name AS text)) AND d.company_id = :companyId", nativeQuery = true)
+    boolean existsByNameIgnoreCaseAndCompanyId(@Param("name") String name, @Param("companyId") Long companyId);
 
-    List<DesignationEntity> findAllByCompanyId(Long companyId);
+    @Query(value = "SELECT d.id, CAST(d.name AS varchar) AS name, CAST(d.description AS varchar) AS description, d.active, d.company_id, d.department_id, d.created_at FROM designations d WHERE d.company_id = :companyId", nativeQuery = true)
+    List<DesignationEntity> findAllByCompanyId(@Param("companyId") Long companyId);
 
     Optional<DesignationEntity> findByIdAndCompany_Id(Long id, Long companyId);
 
-    @Query("SELECT d FROM DesignationEntity d WHERE d.company.id = :companyId " +
-            "AND (:search IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-            "OR LOWER(d.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    @Query(value = "SELECT d.id, CAST(d.name AS varchar) AS name, CAST(d.description AS varchar) AS description, d.active, d.company_id, d.department_id, d.created_at FROM designations d WHERE d.company_id = :companyId " +
+            "AND (:search IS NULL OR LOWER(CAST(d.name AS text)) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(CAST(d.description AS text)) LIKE LOWER(CONCAT('%', :search, '%')))",
+            countQuery = "SELECT COUNT(*) FROM designations d WHERE d.company_id = :companyId " +
+            "AND (:search IS NULL OR LOWER(CAST(d.name AS text)) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(CAST(d.description AS text)) LIKE LOWER(CONCAT('%', :search, '%')))",
+            nativeQuery = true)
     Page<DesignationEntity> searchByCompany(@Param("companyId") Long companyId,
             @Param("search") String search,
             Pageable pageable);

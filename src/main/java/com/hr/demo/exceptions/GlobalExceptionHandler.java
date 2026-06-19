@@ -45,9 +45,13 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<?> handleBadRequest(BadRequestException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
-        // Handle validation errors - return 409 Conflict for duplicates, 400 for others
         if (ex.getMessage() != null && ex.getMessage().contains("already")) {
             return build(HttpStatus.CONFLICT, ex.getMessage());
         }

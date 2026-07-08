@@ -3,12 +3,18 @@ package com.hr.demo.controller;
 import com.hr.demo.config.OpenApiConfig;
 import com.hr.demo.dto.AddCompanyUserRequest;
 import com.hr.demo.dto.UpdateCompanyUserRequest;
+import com.hr.demo.entity.CompanyEntity;
+import com.hr.demo.entity.UserEntity;
 import com.hr.demo.reaponse.ApiResponse;
+import com.hr.demo.reaponse.CompanyResponse;
 import com.hr.demo.reaponse.UserResponse;
+import com.hr.demo.repository.CompanyRepository;
+import com.hr.demo.repository.UserRepository;
 import com.hr.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
@@ -21,6 +27,8 @@ import java.util.List;
 public class CompanyAdminController {
 
     private final UserService userService;
+    private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
 
     @PostMapping("/users")
     public ResponseEntity<ApiResponse<UserResponse>> addUser(@Valid @RequestBody AddCompanyUserRequest request) {
@@ -52,5 +60,43 @@ public class CompanyAdminController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
         userService.deleteCompanyUser(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "User deleted", null));
+    }
+
+    @GetMapping("/company")
+    public ResponseEntity<ApiResponse<CompanyResponse>> getCompany() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        CompanyEntity company = user.getCompany();
+        if (company == null) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, "No company assigned", null));
+        }
+        CompanyResponse response = CompanyResponse.builder()
+                .id(company.getId())
+                .companyName(company.getCompanyName())
+                .ownerName(company.getOwnerName())
+                .email(company.getEmail())
+                .phone(company.getPhone())
+                .website(company.getWebsite())
+                .logoUrl(company.getLogoUrl())
+                .address(company.getAddress())
+                .city(company.getCity())
+                .state(company.getState())
+                .country(company.getCountry())
+                .postalCode(company.getPostalCode())
+                .gstNumber(company.getGstNumber())
+                .panNumber(company.getPanNumber())
+                .subscriptionPlan(company.getSubscriptionPlan())
+                .employeeLimit(company.getEmployeeLimit())
+                .subscriptionStart(company.getSubscriptionStart())
+                .subscriptionEnd(company.getSubscriptionEnd())
+                .timezone(company.getTimezone())
+                .currency(company.getCurrency())
+                .attendanceMandatory(company.getAttendanceMandatory())
+                .autoEmailReports(company.getAutoEmailReports())
+                .status(company.getStatus())
+                .industryType(company.getIndustryType())
+                .build();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Company fetched", response));
     }
 }

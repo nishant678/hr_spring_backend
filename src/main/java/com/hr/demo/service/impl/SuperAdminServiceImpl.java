@@ -7,16 +7,20 @@ import com.hr.demo.reaponse.CompanyResponse;
 import com.hr.demo.dto.CreateCompanyRequest;
 import com.hr.demo.entity.CompanyEntity;
 import com.hr.demo.entity.UserEntity;
+import com.hr.demo.entity.DepartmentEntity;
+import com.hr.demo.entity.DesignationEntity;
 import com.hr.demo.repository.CompanyRepository;
+import com.hr.demo.repository.DepartmentRepository;
+import com.hr.demo.repository.DesignationRepository;
 import com.hr.demo.repository.UserRepository;
 import com.hr.demo.service.SuperAdminService;
-//import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
+    private final DesignationRepository designationRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -83,7 +89,40 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
         userRepository.save(admin);
 
+        seedDefaultDepartmentsAndDesignations(company);
+
         return mapToResponse(company);
+    }
+
+    private void seedDefaultDepartmentsAndDesignations(CompanyEntity company) {
+        Map<String, List<String>> deptDesignations = Map.of(
+                "Engineering", List.of("Software Engineer", "Senior Software Engineer", "Tech Lead", "Engineering Manager"),
+                "Human Resources", List.of("HR Executive", "HR Manager"),
+                "Finance", List.of("Finance Executive", "Finance Manager"),
+                "Marketing", List.of("Marketing Executive", "Marketing Manager"),
+                "Operations", List.of("Operations Executive", "Operations Manager")
+        );
+
+        for (Map.Entry<String, List<String>> entry : deptDesignations.entrySet()) {
+            DepartmentEntity dept = DepartmentEntity.builder()
+                    .name(entry.getKey())
+                    .description(entry.getKey() + " department")
+                    .active(true)
+                    .company(company)
+                    .build();
+            departmentRepository.save(dept);
+
+            for (String desigName : entry.getValue()) {
+                DesignationEntity desig = DesignationEntity.builder()
+                        .name(desigName)
+                        .description(desigName + " position")
+                        .active(true)
+                        .company(company)
+                        .department(dept)
+                        .build();
+                designationRepository.save(desig);
+            }
+        }
     }
 
     private LocalDate calculatePlanExpiry(SubscriptionPlan plan, LocalDate start) {

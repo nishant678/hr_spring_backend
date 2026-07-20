@@ -83,6 +83,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         UserEntity admin = UserEntity.builder()
                 .email(request.getAdminEmail())
                 .password(passwordEncoder.encode(request.getAdminPassword()))
+                .firstName(request.getAdminFirstName())
+                .lastName(request.getAdminLastName())
+                .phone(request.getAdminPhone())
                 .role(Role.COMPANY_ADMIN)
                 .company(company)
                 .build();

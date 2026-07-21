@@ -52,7 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/hr/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR")
                         .requestMatchers("/api/employee/**")
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
-                        .requestMatchers("/api/leaves/**", "/api/files/**")
+                        .requestMatchers("/api/leaves/**", "/api/expenses/**", "/api/files/**")
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex

@@ -19,5 +19,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     long countByCompany_Id(Long companyId);
 
+    long countByCompany_IdAndShift(Long companyId, String shift);
+
     List<UserEntity> findByCompany_Id(Long companyId);
 }

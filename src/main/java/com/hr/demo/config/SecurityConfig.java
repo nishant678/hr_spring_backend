@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
                         .requestMatchers("/api/attendance/**", "/api/payslip/**")
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
-                        .requestMatchers("/api/leaves/**", "/api/expenses/**", "/api/files/**")
+                        .requestMatchers("/api/leaves/**", "/api/expenses/**", "/api/files/**", "/api/holidays/**", "/api/shifts/**")
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex

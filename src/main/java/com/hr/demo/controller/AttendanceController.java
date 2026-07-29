@@ -45,15 +45,19 @@ public class AttendanceController {
             @RequestParam(required = false) Double latitude,
             @RequestParam(required = false) Double longitude,
             @RequestParam(required = false) String locationAddress,
-            @RequestParam(value = "faceImage", required = false) MultipartFile faceImage) {
+            @RequestParam(value = "faceImage", required = false) MultipartFile faceImage,
+            @RequestParam String checkInTime,
+            @RequestParam String date) {
         var response = attendanceService.checkIn(currentUserId(), currentCompanyId(),
-                latitude, longitude, locationAddress, faceImage);
+                latitude, longitude, locationAddress, faceImage, checkInTime, date);
         return ResponseEntity.ok(new ApiResponse<>(true, "Check-in successful", response));
     }
 
     @PostMapping("/api/attendance/check-out")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> checkOut() {
-        var response = attendanceService.checkOut(currentUserId(), currentCompanyId());
+    public ResponseEntity<ApiResponse<AttendanceResponse>> checkOut(
+            @RequestParam String checkOutTime,
+            @RequestParam String date) {
+        var response = attendanceService.checkOut(currentUserId(), currentCompanyId(), checkOutTime, date);
         return ResponseEntity.ok(new ApiResponse<>(true, "Check-out successful", response));
     }
 

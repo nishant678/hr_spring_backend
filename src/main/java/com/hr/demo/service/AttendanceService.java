@@ -8,9 +8,10 @@ import java.util.List;
 public interface AttendanceService {
 
     AttendanceResponse checkIn(Long userId, Long companyId, Double latitude, Double longitude,
-                               String locationAddress, MultipartFile faceImage);
+                               String locationAddress, MultipartFile faceImage,
+                               String checkInTime, String date);
 
-    AttendanceResponse checkOut(Long userId, Long companyId);
+    AttendanceResponse checkOut(Long userId, Long companyId, String checkOutTime, String date);
 
     List<AttendanceResponse> getMyAttendance(Long userId);
 

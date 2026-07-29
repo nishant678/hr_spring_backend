@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -34,14 +35,15 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     public AttendanceResponse checkIn(Long userId, Long companyId, Double latitude, Double longitude,
-                                      String locationAddress, MultipartFile faceImage) {
-        validateNotAlreadyCheckedIn(userId);
+                                      String locationAddress, MultipartFile faceImage,
+                                      String checkInTime, String date) {
+        validateNotAlreadyCheckedIn(userId, date);
 
         UserEntity user = findUser(userId);
         CompanyEntity company = findCompany(companyId);
 
-        LocalDate today = LocalDate.now();
-        LocalTime now = LocalTime.now();
+        LocalDate today = LocalDate.parse(date);
+        LocalTime now = LocalTime.parse(checkInTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
 
         String faceImageUrl = null;
         if (faceImage != null && !faceImage.isEmpty()) {
@@ -69,8 +71,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public AttendanceResponse checkOut(Long userId, Long companyId) {
-        LocalDate today = LocalDate.now();
+    public AttendanceResponse checkOut(Long userId, Long companyId, String checkOutTime, String date) {
+        LocalDate today = LocalDate.parse(date);
         AttendanceEntity attendance = attendanceRepository.findByUser_IdAndDate(userId, today)
                 .orElseThrow(() -> new BadRequestException("No check-in found for today"));
 
@@ -78,7 +80,7 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new BadRequestException("Already checked out today");
         }
 
-        LocalTime now = LocalTime.now();
+        LocalTime now = LocalTime.parse(checkOutTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
         attendance.setCheckOutTime(now);
 
         double hours = ChronoUnit.MINUTES.between(attendance.getCheckInTime(), now) / 60.0;
@@ -116,8 +118,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .toList();
     }
 
-    private void validateNotAlreadyCheckedIn(Long userId) {
-        LocalDate today = LocalDate.now();
+    private void validateNotAlreadyCheckedIn(Long userId, String date) {
+        LocalDate today = LocalDate.parse(date);
         attendanceRepository.findByUser_IdAndDate(userId, today)
                 .ifPresent(a -> {
                     if (a.getCheckOutTime() == null) {

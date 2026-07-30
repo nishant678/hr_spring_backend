@@ -11,5 +11,6 @@ public interface UserService {
     UserResponse updateCompanyUser(Long id, UpdateCompanyUserRequest request);
     void deleteCompanyUser(Long id);
     UserResponse getCompanyUser(Long id);
+    UserResponse getUserProfile(Long id);
     List<UserResponse> getCompanyUsers();
 }

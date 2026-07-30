@@ -5,6 +5,7 @@ import com.hr.demo.entity.UserEntity;
 import com.hr.demo.exceptions.UnauthorizedException;
 import com.hr.demo.reaponse.ApiResponse;
 import com.hr.demo.reaponse.SalarySlipResponse;
+import com.hr.demo.service.PayrollService;
 import com.hr.demo.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 public class SalarySlipController {
 
     private final SecurityUtil securityUtil;
+    private final PayrollService payrollService;
 
     private UserEntity getCurrentUser() {
         return securityUtil.getCurrentUser()
@@ -31,6 +33,37 @@ public class SalarySlipController {
             @RequestParam int month) {
         UserEntity user = getCurrentUser();
 
+        // Try payroll record first
+        var payrollRecord = payrollService.getMyPayrollRecord(user.getId(), year, month);
+        if (payrollRecord != null) {
+            SalarySlipResponse slip = new SalarySlipResponse(
+                    payrollRecord.getEmployeeName(),
+                    payrollRecord.getEmployeeId(),
+                    payrollRecord.getDesignation(),
+                    payrollRecord.getDepartment(),
+                    year, month,
+                    payrollRecord.getBasicSalary(),
+                    payrollRecord.getGrossEarnings(),
+                    payrollRecord.getBankName(),
+                    payrollRecord.getBankAccountNumber(),
+                    payrollRecord.getIfscCode(),
+                    user.getPanNumber() != null ? user.getPanNumber() : "",
+                    user.getUanNumber() != null ? user.getUanNumber() : "",
+                    payrollRecord.getHra(),
+                    payrollRecord.getConveyance(),
+                    payrollRecord.getMedical(),
+                    payrollRecord.getSpecialAllowance(),
+                    payrollRecord.getPf(),
+                    payrollRecord.getEsi(),
+                    payrollRecord.getProfessionalTax(),
+                    payrollRecord.getTds(),
+                    payrollRecord.getTotalDeductions(),
+                    payrollRecord.getNetPay(),
+                    payrollRecord.getNetPayInWords());
+            return ResponseEntity.ok(new ApiResponse<>(true, "Payslip fetched (processed)", slip));
+        }
+
+        // Fallback: live calculation from user entity
         String deptName = user.getDepartment() != null ? user.getDepartment().getName() : "";
         String desigName = user.getDesignation() != null ? user.getDesignation().getName() : "";
         String fullName = (user.getFirstName() != null ? user.getFirstName() : "")
@@ -48,6 +81,6 @@ public class SalarySlipController {
                 fullName.trim(), user.getEmployeeId(), desigName, deptName,
                 year, month, basic, gross, bank, acct, ifsc, pan, uan);
 
-        return ResponseEntity.ok(new ApiResponse<>(true, "Payslip fetched", slip));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Payslip fetched (estimated)", slip));
     }
 }

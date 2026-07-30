@@ -3,9 +3,11 @@ package com.hr.demo.reaponse;
 import com.hr.demo.domain.user.Role;
 import com.hr.demo.entity.UserEntity;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 public class UserResponse {
@@ -73,6 +75,10 @@ public class UserResponse {
     private String esiNumber;
     private String uanNumber;
     private String taxRegime;
+
+    // Assets
+    @Setter
+    private List<AssignedAssetResponse> assets;
 
     // Additional Information
     private String education;

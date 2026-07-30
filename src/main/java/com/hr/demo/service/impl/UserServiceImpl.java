@@ -4,19 +4,13 @@ import com.hr.demo.domain.company.CompanyStatus;
 import com.hr.demo.domain.user.Role;
 import com.hr.demo.dto.AddCompanyUserRequest;
 import com.hr.demo.dto.UpdateCompanyUserRequest;
-import com.hr.demo.entity.CompanyEntity;
-import com.hr.demo.entity.DepartmentEntity;
-import com.hr.demo.entity.DesignationEntity;
-import com.hr.demo.entity.RoleEntity;
-import com.hr.demo.entity.UserEntity;
+import com.hr.demo.entity.*;
 import com.hr.demo.exceptions.ResourceNotFoundException;
 import com.hr.demo.exceptions.UnauthorizedException;
 import com.hr.demo.exceptions.UserAlreadyExistsException;
+import com.hr.demo.reaponse.AssignedAssetResponse;
 import com.hr.demo.reaponse.UserResponse;
-import com.hr.demo.repository.DepartmentRepository;
-import com.hr.demo.repository.DesignationRepository;
-import com.hr.demo.repository.RoleRepository;
-import com.hr.demo.repository.UserRepository;
+import com.hr.demo.repository.*;
 import com.hr.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final DepartmentRepository departmentRepository;
     private final DesignationRepository designationRepository;
     private final RoleRepository roleRepository;
+    private final AssetRepository assetRepository;
 
     private UserEntity getCurrentAdmin() {
         String adminEmail = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -301,7 +296,20 @@ public class UserServiceImpl implements UserService {
             throw new UnauthorizedException("User does not belong to your company");
         }
 
-        return new UserResponse(user);
+        UserResponse response = new UserResponse(user);
+        response.setAssets(assetRepository.findByAssignedTo_IdOrderByCreatedAtDesc(user.getId())
+                .stream().map(AssignedAssetResponse::new).toList());
+        return response;
+    }
+
+    @Override
+    public UserResponse getUserProfile(Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UserResponse response = new UserResponse(user);
+        response.setAssets(assetRepository.findByAssignedTo_IdOrderByCreatedAtDesc(user.getId())
+                .stream().map(AssignedAssetResponse::new).toList());
+        return response;
     }
 
     @Override

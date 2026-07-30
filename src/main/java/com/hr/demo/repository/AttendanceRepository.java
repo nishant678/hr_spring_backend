@@ -21,5 +21,7 @@ public interface AttendanceRepository extends JpaRepository<AttendanceEntity, Lo
 
     List<AttendanceEntity> findByCompany_IdAndDateBetweenOrderByDateDesc(Long companyId, LocalDate start, LocalDate end);
 
+    List<AttendanceEntity> findByUser_IdAndDateBetween(Long userId, LocalDate start, LocalDate end);
+
     long countByCompany_IdAndDateAndStatus(Long companyId, LocalDate date, String status);
 }

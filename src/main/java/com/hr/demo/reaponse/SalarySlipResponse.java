@@ -1,5 +1,6 @@
 package com.hr.demo.reaponse;
 
+import com.hr.demo.util.NumberToWords;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -38,6 +39,7 @@ public class SalarySlipResponse {
     private final String panNumber;
     private final String uanNumber;
 
+    // Constructor for live (on-the-fly) calculation from user entity
     public SalarySlipResponse(String employeeName, String employeeId, String designation,
                               String department, int year, int month,
                               BigDecimal basicSalary, BigDecimal grossSalary,
@@ -69,8 +71,46 @@ public class SalarySlipResponse {
         this.totalDeductions = pf.add(esi).add(professionalTax).add(tds);
 
         this.netPay = grossEarnings.subtract(totalDeductions).setScale(2, RoundingMode.HALF_UP);
-        this.netPayInWords = "Rupees " + numberToWords(netPay.longValue()) + " Only";
+        this.netPayInWords = "Rupees " + NumberToWords.convert(netPay.longValue()) + " Only";
 
+        this.bankName = bankName;
+        this.bankAccountNumber = bankAccountNumber;
+        this.ifscCode = ifscCode;
+        this.panNumber = panNumber;
+        this.uanNumber = uanNumber;
+    }
+
+    // Constructor for processed payroll (pre-computed values)
+    public SalarySlipResponse(String employeeName, String employeeId, String designation,
+                              String department, int year, int month,
+                              BigDecimal basicSalary, BigDecimal grossEarnings,
+                              String bankName, String bankAccountNumber,
+                              String ifscCode, String panNumber, String uanNumber,
+                              BigDecimal hra, BigDecimal conveyance, BigDecimal medical,
+                              BigDecimal specialAllowance,
+                              BigDecimal pf, BigDecimal esi, BigDecimal professionalTax,
+                              BigDecimal tds, BigDecimal totalDeductions,
+                              BigDecimal netPay, String netPayInWords) {
+        this.employeeName = employeeName;
+        this.employeeId = employeeId;
+        this.designation = designation;
+        this.department = department;
+        this.year = year;
+        this.month = month;
+        this.monthName = getMonthName(month);
+        this.basicSalary = basicSalary;
+        this.hra = hra;
+        this.conveyance = conveyance;
+        this.medical = medical;
+        this.specialAllowance = specialAllowance;
+        this.grossEarnings = grossEarnings;
+        this.pf = pf;
+        this.esi = esi;
+        this.professionalTax = professionalTax;
+        this.tds = tds;
+        this.totalDeductions = totalDeductions;
+        this.netPay = netPay;
+        this.netPayInWords = netPayInWords;
         this.bankName = bankName;
         this.bankAccountNumber = bankAccountNumber;
         this.ifscCode = ifscCode;
@@ -82,19 +122,5 @@ public class SalarySlipResponse {
         String[] months = {"January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"};
         return (m >= 1 && m <= 12) ? months[m - 1] : "Unknown";
-    }
-
-    private String numberToWords(long n) {
-        if (n == 0) return "Zero";
-        String[] ones = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
-                "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
-                "Seventeen", "Eighteen", "Nineteen"};
-        String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
-        if (n < 20) return ones[(int) n];
-        if (n < 100) return tens[(int) (n / 10)] + (n % 10 > 0 ? " " + ones[(int) (n % 10)] : "");
-        if (n < 1000) return ones[(int) (n / 100)] + " Hundred" + (n % 100 > 0 ? " " + numberToWords(n % 100) : "");
-        if (n < 100000) return numberToWords(n / 1000) + " Thousand" + (n % 1000 > 0 ? " " + numberToWords(n % 1000) : "");
-        if (n < 10000000) return numberToWords(n / 100000) + " Lakh" + (n % 100000 > 0 ? " " + numberToWords(n % 100000) : "");
-        return numberToWords(n / 10000000) + " Crore" + (n % 10000000 > 0 ? " " + numberToWords(n % 10000000) : "");
     }
 }

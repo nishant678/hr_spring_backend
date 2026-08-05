@@ -11,11 +11,13 @@ import com.hr.demo.exceptions.UserAlreadyExistsException;
 import com.hr.demo.reaponse.AssignedAssetResponse;
 import com.hr.demo.reaponse.UserResponse;
 import com.hr.demo.repository.*;
+import com.hr.demo.service.FileStorageService;
 import com.hr.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -34,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final DesignationRepository designationRepository;
     private final RoleRepository roleRepository;
     private final AssetRepository assetRepository;
+    private final FileStorageService fileStorageService;
 
     private UserEntity getCurrentAdmin() {
         String adminEmail = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -310,6 +313,20 @@ public class UserServiceImpl implements UserService {
         response.setAssets(assetRepository.findByAssignedTo_IdOrderByCreatedAtDesc(user.getId())
                 .stream().map(AssignedAssetResponse::new).toList());
         return response;
+    }
+
+    @Override
+    public UserResponse updateProfilePhoto(Long userId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResourceNotFoundException("Profile image is required");
+        }
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Long companyId = user.getCompany() != null ? user.getCompany().getId() : 0L;
+        String storedPath = fileStorageService.storeProfilePhoto(file, companyId);
+        user.setProfilePhoto("/api/profile-photo/" + storedPath);
+        userRepository.save(user);
+        return getUserProfile(user.getId());
     }
 
     @Override

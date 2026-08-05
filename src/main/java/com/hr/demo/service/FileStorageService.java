@@ -7,6 +7,8 @@ public interface FileStorageService {
 
     String storeFile(MultipartFile file, Long companyId, Long leaveId);
 
+    String storeProfilePhoto(MultipartFile file, Long companyId);
+
     Resource loadFile(String filename);
 
     String getFileUrl(String filename);

@@ -5,13 +5,21 @@ import com.hr.demo.entity.UserEntity;
 import com.hr.demo.exceptions.UnauthorizedException;
 import com.hr.demo.reaponse.ApiResponse;
 import com.hr.demo.reaponse.UserResponse;
+import com.hr.demo.service.FileStorageService;
 import com.hr.demo.service.UserService;
 import com.hr.demo.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
@@ -20,6 +28,7 @@ public class EmployeeController {
 
     private final SecurityUtil securityUtil;
     private final UserService userService;
+    private final FileStorageService fileStorageService;
 
     @GetMapping("/api/employee/profile")
     public ResponseEntity<ApiResponse<UserResponse>> getProfile() {
@@ -27,5 +36,36 @@ public class EmployeeController {
                 .orElseThrow(() -> new UnauthorizedException("Unauthenticated"));
         UserResponse response = userService.getUserProfile(user.getId());
         return ResponseEntity.ok(new ApiResponse<>(true, "Profile fetched", response));
+    }
+
+    @PostMapping("/api/employee/profile/photo")
+    public ResponseEntity<ApiResponse<UserResponse>> updateProfilePhoto(
+            @RequestParam("image") MultipartFile image) {
+        UserEntity user = securityUtil.getCurrentUser()
+                .orElseThrow(() -> new UnauthorizedException("Unauthenticated"));
+        UserResponse response = userService.updateProfilePhoto(user.getId(), image);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Profile photo updated", response));
+    }
+
+    @GetMapping("/api/profile-photo/{companyId}/{filename}")
+    public ResponseEntity<Resource> serveProfilePhoto(
+            @PathVariable Long companyId,
+            @PathVariable String filename) {
+        Resource resource = fileStorageService.loadFile("profiles/" + companyId + "/" + filename);
+        MediaType contentType = contentTypeFor(filename);
+        return ResponseEntity.ok()
+                .contentType(contentType)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    private MediaType contentTypeFor(String filename) {
+        String name = filename.toLowerCase();
+        if (name.endsWith(".png")) return MediaType.IMAGE_PNG;
+        if (name.endsWith(".webp")) return MediaType.parseMediaType("image/webp");
+        if (name.endsWith(".gif")) return MediaType.IMAGE_GIF;
+        if (name.endsWith(".bmp")) return MediaType.parseMediaType("image/bmp");
+        return MediaType.IMAGE_JPEG;
     }
 }

@@ -73,6 +73,35 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
+    public String storeProfilePhoto(MultipartFile file, Long companyId) {
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+        if (originalFilename.isBlank()) {
+            throw new BadRequestException("File name is empty");
+        }
+
+        String extension = "";
+        int dotIndex = originalFilename.lastIndexOf('.');
+        if (dotIndex > 0) {
+            extension = originalFilename.substring(dotIndex + 1).toLowerCase();
+        }
+
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new BadRequestException("File type not allowed: " + extension);
+        }
+
+        String storedFilename = UUID.randomUUID() + "." + extension;
+        Path companyDir = uploadPath.resolve("profiles").resolve(String.valueOf(companyId));
+        try {
+            Files.createDirectories(companyDir);
+            Path targetPath = companyDir.resolve(storedFilename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "profiles/" + companyId + "/" + storedFilename;
+        } catch (IOException e) {
+            throw new RuntimeException("Could not store file " + storedFilename, e);
+        }
+    }
+
+    @Override
     public Resource loadFile(String filename) {
         try {
             Path filePath = uploadPath.resolve(filename).normalize();

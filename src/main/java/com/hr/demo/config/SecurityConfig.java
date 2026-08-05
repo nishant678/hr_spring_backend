@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html")
                         .permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/profile-photo/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/super-admin/**").hasRole("MASTER_ADMIN")
                         .requestMatchers("/api/company-admin/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN")

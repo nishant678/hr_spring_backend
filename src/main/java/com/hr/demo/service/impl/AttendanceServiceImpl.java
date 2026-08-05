@@ -12,6 +12,8 @@ import com.hr.demo.repository.CompanyRepository;
 import com.hr.demo.repository.UserRepository;
 import com.hr.demo.service.AttendanceService;
 import com.hr.demo.service.FileStorageService;
+import com.hr.demo.service.faceverify.FaceVerificationClient;
+import com.hr.demo.service.faceverify.FaceVerificationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final FileStorageService fileStorageService;
+    private final FaceVerificationClient faceVerificationClient;
 
     @Override
     public AttendanceResponse checkIn(Long userId, Long companyId, Double latitude, Double longitude,
@@ -47,6 +50,22 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         String faceImageUrl = null;
         if (faceImage != null && !faceImage.isEmpty()) {
+            if (faceVerificationClient.isEnabled()) {
+                String employeeId = (user.getEmployeeId() != null && !user.getEmployeeId().isBlank())
+                        ? user.getEmployeeId()
+                        : String.valueOf(user.getId());
+                FaceVerificationClient.VerifyOutcome outcome;
+                try {
+                    outcome = faceVerificationClient.verify(employeeId, faceImage);
+                } catch (FaceVerificationException ex) {
+                    throw new BadRequestException("Face verification unavailable: " + ex.getMessage());
+                }
+                if (!outcome.matched()) {
+                    throw new BadRequestException(
+                            "Face verification failed — chehra match nahi hua / Face does not match the registered employee "
+                                    + "(score " + outcome.score() + ")");
+                }
+            }
             faceImageUrl = fileStorageService.storeFile(faceImage, companyId, userId);
         }
 

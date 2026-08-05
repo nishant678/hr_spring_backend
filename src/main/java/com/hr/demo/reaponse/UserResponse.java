@@ -95,73 +95,77 @@ public class UserResponse {
             this.companyId = user.getCompany().getId();
         }
 
-        this.firstName = user.getFirstName();
-        this.middleName = user.getMiddleName();
-        this.lastName = user.getLastName();
-        this.employeeId = user.getEmployeeId();
+        this.firstName = nvl(user.getFirstName());
+        this.middleName = nvl(user.getMiddleName());
+        this.lastName = nvl(user.getLastName());
+        this.employeeId = nvl(user.getEmployeeId());
         this.dateOfBirth = user.getDateOfBirth();
-        this.gender = user.getGender();
-        this.maritalStatus = user.getMaritalStatus();
-        this.nationality = user.getNationality();
-        this.bloodGroup = user.getBloodGroup();
-        this.panNumber = user.getPanNumber();
-        this.aadhaarNumber = user.getAadhaarNumber();
-        this.passportNumber = user.getPassportNumber();
-        this.profilePhoto = user.getProfilePhoto();
-        this.email = user.getEmail();
-        this.phone = user.getPhone();
+        this.gender = nvl(user.getGender());
+        this.maritalStatus = nvl(user.getMaritalStatus());
+        this.nationality = nvl(user.getNationality());
+        this.bloodGroup = nvl(user.getBloodGroup());
+        this.panNumber = nvl(user.getPanNumber());
+        this.aadhaarNumber = nvl(user.getAadhaarNumber());
+        this.passportNumber = nvl(user.getPassportNumber());
+        this.profilePhoto = nvl(user.getProfilePhoto());
+        this.email = nvl(user.getEmail());
+        this.phone = nvl(user.getPhone());
         this.role = user.getRole().name();
 
         if (user.getDepartment() != null) {
             this.departmentId = user.getDepartment().getId();
-            this.departmentName = user.getDepartment().getName();
+            this.departmentName = nvl(user.getDepartment().getName());
         }
         if (user.getDesignation() != null) {
             this.designationId = user.getDesignation().getId();
-            this.designationName = user.getDesignation().getName();
+            this.designationName = nvl(user.getDesignation().getName());
         }
         if (user.getUserRole() != null) {
             this.userRoleId = user.getUserRole().getId();
-            this.userRoleName = user.getUserRole().getName();
+            this.userRoleName = nvl(user.getUserRole().getName());
         }
 
-        this.employmentType = user.getEmploymentType();
+        this.employmentType = nvl(user.getEmploymentType());
         this.dateOfJoining = user.getDateOfJoining();
-        this.reportingManager = user.getReportingManager();
-        this.workLocation = user.getWorkLocation();
-        this.probationPeriod = user.getProbationPeriod();
+        this.reportingManager = nvl(user.getReportingManager());
+        this.workLocation = nvl(user.getWorkLocation());
+        this.probationPeriod = nvl(user.getProbationPeriod());
         this.confirmationDate = user.getConfirmationDate();
-        this.shift = user.getShift();
-        this.employeeCategory = user.getEmployeeCategory();
-        this.costCenter = user.getCostCenter();
-        this.businessUnit = user.getBusinessUnit();
+        this.shift = nvl(user.getShift());
+        this.employeeCategory = nvl(user.getEmployeeCategory());
+        this.costCenter = nvl(user.getCostCenter());
+        this.businessUnit = nvl(user.getBusinessUnit());
 
-        this.officialEmail = user.getOfficialEmail();
-        this.officialPhone = user.getOfficialPhone();
-        this.personalEmail = user.getPersonalEmail();
-        this.personalPhone = user.getPersonalPhone();
-        this.currentAddress = user.getCurrentAddress();
-        this.permanentAddress = user.getPermanentAddress();
+        this.officialEmail = nvl(user.getOfficialEmail());
+        this.officialPhone = nvl(user.getOfficialPhone());
+        this.personalEmail = nvl(user.getPersonalEmail());
+        this.personalPhone = nvl(user.getPersonalPhone());
+        this.currentAddress = nvl(user.getCurrentAddress());
+        this.permanentAddress = nvl(user.getPermanentAddress());
 
-        this.paySchedule = user.getPaySchedule();
-        this.currency = user.getCurrency();
+        this.paySchedule = nvl(user.getPaySchedule());
+        this.currency = nvl(user.getCurrency());
         this.basicSalary = user.getBasicSalary();
         this.grossSalary = user.getGrossSalary();
-        this.paymentFrequency = user.getPaymentFrequency();
-        this.bankName = user.getBankName();
-        this.bankAccountNumber = user.getBankAccountNumber();
-        this.ifscCode = user.getIfscCode();
-        this.pfNumber = user.getPfNumber();
-        this.esiNumber = user.getEsiNumber();
-        this.uanNumber = user.getUanNumber();
-        this.taxRegime = user.getTaxRegime();
+        this.paymentFrequency = nvl(user.getPaymentFrequency());
+        this.bankName = nvl(user.getBankName());
+        this.bankAccountNumber = nvl(user.getBankAccountNumber());
+        this.ifscCode = nvl(user.getIfscCode());
+        this.pfNumber = nvl(user.getPfNumber());
+        this.esiNumber = nvl(user.getEsiNumber());
+        this.uanNumber = nvl(user.getUanNumber());
+        this.taxRegime = nvl(user.getTaxRegime());
 
-        this.education = user.getEducation();
+        this.education = nvl(user.getEducation());
         this.experienceYears = user.getExperienceYears();
-        this.skills = user.getSkills();
-        this.languagesKnown = user.getLanguagesKnown();
-        this.emergencyContactName = user.getEmergencyContactName();
-        this.emergencyContactRelationship = user.getEmergencyContactRelationship();
-        this.emergencyContactPhone = user.getEmergencyContactPhone();
+        this.skills = nvl(user.getSkills());
+        this.languagesKnown = nvl(user.getLanguagesKnown());
+        this.emergencyContactName = nvl(user.getEmergencyContactName());
+        this.emergencyContactRelationship = nvl(user.getEmergencyContactRelationship());
+        this.emergencyContactPhone = nvl(user.getEmergencyContactPhone());
+    }
+
+    private static String nvl(String value) {
+        return value == null ? "" : value;
     }
 }

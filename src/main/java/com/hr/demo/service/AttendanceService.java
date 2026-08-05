@@ -11,7 +11,8 @@ public interface AttendanceService {
                                String locationAddress, MultipartFile faceImage,
                                String checkInTime, String date);
 
-    AttendanceResponse checkOut(Long userId, Long companyId, String checkOutTime, String date);
+    AttendanceResponse checkOut(Long userId, Long companyId, String checkOutTime, String date,
+                                MultipartFile faceImage);
 
     List<AttendanceResponse> getMyAttendance(Long userId);
 

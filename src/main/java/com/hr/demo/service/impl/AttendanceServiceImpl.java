@@ -90,13 +90,34 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public AttendanceResponse checkOut(Long userId, Long companyId, String checkOutTime, String date) {
+    public AttendanceResponse checkOut(Long userId, Long companyId, String checkOutTime, String date,
+                                       MultipartFile faceImage) {
         LocalDate today = LocalDate.parse(date);
         AttendanceEntity attendance = attendanceRepository.findByUser_IdAndDate(userId, today)
                 .orElseThrow(() -> new BadRequestException("No check-in found for today"));
 
         if (attendance.getCheckOutTime() != null) {
             throw new BadRequestException("Already checked out today");
+        }
+
+        if (faceImage != null && !faceImage.isEmpty()) {
+            if (faceVerificationClient.isEnabled()) {
+                UserEntity user = findUser(userId);
+                String employeeId = (user.getEmployeeId() != null && !user.getEmployeeId().isBlank())
+                        ? user.getEmployeeId()
+                        : String.valueOf(user.getId());
+                FaceVerificationClient.VerifyOutcome outcome;
+                try {
+                    outcome = faceVerificationClient.verify(employeeId, faceImage);
+                } catch (FaceVerificationException ex) {
+                    throw new BadRequestException("Face verification unavailable: " + ex.getMessage());
+                }
+                if (!outcome.matched()) {
+                    throw new BadRequestException(
+                            "Face verification failed — chehra match nahi hua / Face does not match the registered employee "
+                                    + "(score " + outcome.score() + ")");
+                }
+            }
         }
 
         LocalTime now = LocalTime.parse(checkOutTime, DateTimeFormatter.ofPattern("HH:mm:ss"));

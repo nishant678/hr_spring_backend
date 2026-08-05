@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
 @RequiredArgsConstructor
@@ -47,16 +49,17 @@ public class EmployeeController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Profile photo updated", response));
     }
 
-    @GetMapping("/api/profile-photo/{companyId}/{filename}")
-    public ResponseEntity<Resource> serveProfilePhoto(
-            @PathVariable Long companyId,
-            @PathVariable String filename) {
-        Resource resource = fileStorageService.loadFile("profiles/" + companyId + "/" + filename);
+    @GetMapping("/api/profile-photo/**")
+    public ResponseEntity<Resource> serveProfilePhoto(HttpServletRequest request) {
+        String path = request.getRequestURI()
+                .substring(request.getRequestURI().indexOf("/api/profile-photo/") + "/api/profile-photo/".length());
+        Resource resource = fileStorageService.loadFile(path);
+        String filename = resource.getFilename() != null ? resource.getFilename() : path;
         MediaType contentType = contentTypeFor(filename);
         return ResponseEntity.ok()
                 .contentType(contentType)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + resource.getFilename() + "\"")
+                        "inline; filename=\"" + filename + "\"")
                 .body(resource);
     }
 

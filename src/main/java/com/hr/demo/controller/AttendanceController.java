@@ -56,8 +56,9 @@ public class AttendanceController {
     @PostMapping("/api/attendance/check-out")
     public ResponseEntity<ApiResponse<AttendanceResponse>> checkOut(
             @RequestParam String checkOutTime,
-            @RequestParam String date) {
-        var response = attendanceService.checkOut(currentUserId(), currentCompanyId(), checkOutTime, date);
+            @RequestParam String date,
+            @RequestParam(value = "faceImage", required = false) MultipartFile faceImage) {
+        var response = attendanceService.checkOut(currentUserId(), currentCompanyId(), checkOutTime, date, faceImage);
         return ResponseEntity.ok(new ApiResponse<>(true, "Check-out successful", response));
     }
 

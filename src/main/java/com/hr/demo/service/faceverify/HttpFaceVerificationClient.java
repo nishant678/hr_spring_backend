@@ -89,6 +89,60 @@ public class HttpFaceVerificationClient implements FaceVerificationClient {
         }
     }
 
+    @Override
+    public FaceProcessResponse processRegistration(MultipartFile image) {
+        try {
+            byte[] bytes = image.getBytes();
+            ByteArrayResource resource = new ByteArrayResource(bytes) {
+                @Override public String getFilename() {
+                    String n = image.getOriginalFilename();
+                    return n != null && !n.isBlank() ? n : "face.jpg";
+                }
+            };
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("image", resource);
+            return restClient.post()
+                    .uri("/internal/v1/face/register")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(body)
+                    .retrieve()
+                    .body(FaceProcessResponse.class);
+        } catch (IOException e) {
+            throw new FaceVerificationException("Could not read face image", e);
+        } catch (ResourceAccessException ex) {
+            throw new FaceVerificationException("Face service unreachable: " + ex.getMessage(), ex);
+        } catch (RestClientResponseException ex) {
+            throw friendly(ex);
+        }
+    }
+
+    @Override
+    public FaceProcessResponse processVerify(MultipartFile image) {
+        try {
+            byte[] bytes = image.getBytes();
+            ByteArrayResource resource = new ByteArrayResource(bytes) {
+                @Override public String getFilename() {
+                    String n = image.getOriginalFilename();
+                    return n != null && !n.isBlank() ? n : "face.jpg";
+                }
+            };
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("image", resource);
+            return restClient.post()
+                    .uri("/internal/v1/face/verify")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(body)
+                    .retrieve()
+                    .body(FaceProcessResponse.class);
+        } catch (IOException e) {
+            throw new FaceVerificationException("Could not read face image", e);
+        } catch (ResourceAccessException ex) {
+            throw new FaceVerificationException("Face service unreachable: " + ex.getMessage(), ex);
+        } catch (RestClientResponseException ex) {
+            throw friendly(ex);
+        }
+    }
+
     private MultiValueMap<String, Object> multipart(String employeeId, String name, MultipartFile image) {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("employeeId", employeeId);

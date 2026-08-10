@@ -48,6 +48,9 @@ public class UserEntity implements UserDetails {
     private String passportNumber;
     private String profilePhoto;
 
+    @Column(name = "face_registered", nullable = false)
+    private boolean faceRegistered;
+
     // Job Information
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")

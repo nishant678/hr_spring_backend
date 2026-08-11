@@ -13,7 +13,9 @@ import com.hr.demo.reaponse.UserResponse;
 import com.hr.demo.repository.*;
 import com.hr.demo.service.FileStorageService;
 import com.hr.demo.service.UserService;
+import com.hr.demo.service.faceverify.FaceRecognitionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private static final Set<Role> ROLES_COMPANY_ADMIN_CAN_CREATE =
@@ -37,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final AssetRepository assetRepository;
     private final FileStorageService fileStorageService;
+    private final FaceRecognitionService faceRecognitionService;
 
     private UserEntity getCurrentAdmin() {
         String adminEmail = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -326,6 +330,18 @@ public class UserServiceImpl implements UserService {
         String storedPath = fileStorageService.storeProfilePhoto(file, companyId);
         user.setProfilePhoto("/api/profile-photo/" + storedPath);
         userRepository.save(user);
+
+        String employeeId = (user.getEmployeeId() != null && !user.getEmployeeId().isBlank())
+                ? user.getEmployeeId() : String.valueOf(user.getId());
+        String name = user.getFirstName()
+                + (user.getLastName() != null && !user.getLastName().isBlank() ? " " + user.getLastName() : "");
+        try {
+            faceRecognitionService.register(employeeId, name, file);
+            log.info("Face re-registered after profile photo update for employeeId={}", employeeId);
+        } catch (Exception ex) {
+            log.warn("Face re-register failed for employeeId={}: {}", employeeId, ex.getMessage());
+        }
+
         return getUserProfile(user.getId());
     }
 

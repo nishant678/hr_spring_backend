@@ -1,7 +1,7 @@
 package com.hr.demo.util;
 
-import com.hr.demo.entity.UserEntity;
-import com.hr.demo.repository.UserRepository;
+import com.hr.demo.hr.entity.UserEntity;
+import com.hr.demo.hr.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;

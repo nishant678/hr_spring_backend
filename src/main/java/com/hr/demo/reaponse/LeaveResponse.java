@@ -2,7 +2,7 @@ package com.hr.demo.reaponse;
 
 import com.hr.demo.domain.leave.LeaveStatus;
 import com.hr.demo.domain.leave.LeaveType;
-import com.hr.demo.entity.LeaveEntity;
+import com.hr.demo.hr.entity.LeaveEntity;
 import lombok.Getter;
 
 import java.time.LocalDate;

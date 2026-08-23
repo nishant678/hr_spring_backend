@@ -1,7 +1,7 @@
 package com.hr.demo.reaponse;
 
 import com.hr.demo.domain.attendance.AttendanceStatus;
-import com.hr.demo.entity.AttendanceEntity;
+import com.hr.demo.hr.entity.AttendanceEntity;
 import lombok.Getter;
 
 import java.time.LocalDate;

@@ -1,8 +1,8 @@
 package com.hr.demo.security;
 
-import com.hr.demo.entity.UserEntity;
+import com.hr.demo.hr.entity.UserEntity;
 import com.hr.demo.domain.company.CompanyStatus;
-import com.hr.demo.repository.UserRepository;
+import com.hr.demo.hr.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;

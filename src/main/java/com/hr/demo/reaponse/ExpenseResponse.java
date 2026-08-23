@@ -2,7 +2,7 @@ package com.hr.demo.reaponse;
 
 import com.hr.demo.domain.expense.ExpenseStatus;
 import com.hr.demo.domain.expense.ExpenseType;
-import com.hr.demo.entity.ExpenseEntity;
+import com.hr.demo.hr.entity.ExpenseEntity;
 import lombok.Getter;
 
 import java.math.BigDecimal;

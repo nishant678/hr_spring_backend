@@ -1,7 +1,7 @@
 package com.hr.demo.reaponse;
 
 import com.hr.demo.domain.holiday.HolidayType;
-import com.hr.demo.entity.HolidayEntity;
+import com.hr.demo.hr.entity.HolidayEntity;
 import lombok.Getter;
 
 import java.time.LocalDate;

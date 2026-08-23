@@ -1,7 +1,6 @@
 package com.hr.demo.reaponse;
 
-import com.hr.demo.domain.user.Role;
-import com.hr.demo.entity.UserEntity;
+import com.hr.demo.hr.entity.UserEntity;
 import lombok.Getter;
 import lombok.Setter;
 

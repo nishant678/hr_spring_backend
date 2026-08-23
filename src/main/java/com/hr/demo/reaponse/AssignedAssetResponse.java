@@ -1,6 +1,6 @@
 package com.hr.demo.reaponse;
 
-import com.hr.demo.entity.AssetEntity;
+import com.hr.demo.hr.entity.AssetEntity;
 import lombok.Getter;
 
 import java.time.LocalDate;

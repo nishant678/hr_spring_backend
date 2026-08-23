@@ -1,6 +1,6 @@
 package com.hr.demo.reaponse;
 
-import com.hr.demo.entity.PayrollEntity;
+import com.hr.demo.hr.entity.PayrollEntity;
 import lombok.Getter;
 
 import java.math.BigDecimal;

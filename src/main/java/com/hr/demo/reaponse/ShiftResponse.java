@@ -1,6 +1,6 @@
 package com.hr.demo.reaponse;
 
-import com.hr.demo.entity.ShiftEntity;
+import com.hr.demo.hr.entity.ShiftEntity;
 import lombok.Getter;
 
 @Getter

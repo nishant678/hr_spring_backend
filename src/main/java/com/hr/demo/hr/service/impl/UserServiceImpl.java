@@ -303,6 +303,8 @@ public class UserServiceImpl implements UserService {
             throw new UnauthorizedException("User does not belong to your company");
         }
 
+        ensureAdminDepartmentAndDesignation(user, company);
+
         UserResponse response = new UserResponse(user);
         response.setAssets(assetRepository.findByAssignedTo_IdOrderByCreatedAtDesc(user.getId())
                 .stream().map(AssignedAssetResponse::new).toList());
@@ -313,6 +315,9 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserProfile(Long id) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (user.getCompany() != null) {
+            ensureAdminDepartmentAndDesignation(user, user.getCompany());
+        }
         UserResponse response = new UserResponse(user);
         response.setAssets(assetRepository.findByAssignedTo_IdOrderByCreatedAtDesc(user.getId())
                 .stream().map(AssignedAssetResponse::new).toList());
@@ -337,7 +342,7 @@ public class UserServiceImpl implements UserService {
                 + (user.getLastName() != null && !user.getLastName().isBlank() ? " " + user.getLastName() : "");
         try {
             faceRecognitionService.register(employeeId, name, file);
-            log.info("Face re-registered after profile photo update for employeeId={}", employeeId);
+            log.info("Face re-registered after profile photo update for employeeId={}:", employeeId);
         } catch (Exception ex) {
             log.warn("Face re-register failed for employeeId={}: {}", employeeId, ex.getMessage());
         }
@@ -351,6 +356,50 @@ public class UserServiceImpl implements UserService {
         CompanyEntity company = getAdminCompany(admin);
 
         List<UserEntity> users = userRepository.findByCompany_Id(company.getId());
+        for (UserEntity user : users) {
+            ensureAdminDepartmentAndDesignation(user, company);
+        }
         return users.stream().map(UserResponse::new).toList();
+    }
+
+    private void ensureAdminDepartmentAndDesignation(UserEntity user, CompanyEntity company) {
+        if (user.getRole() != Role.COMPANY_ADMIN) {
+            return;
+        }
+        boolean updated = false;
+        DepartmentEntity adminDept = user.getDepartment();
+        if (adminDept == null) {
+            adminDept = departmentRepository.findAllByCompanyId(company.getId()).stream()
+                    .filter(d -> "Administration".equalsIgnoreCase(d.getName()))
+                    .findFirst()
+                    .orElseGet(() -> departmentRepository.save(DepartmentEntity.builder()
+                            .name("Administration")
+                            .description("Administration department")
+                            .active(true)
+                            .company(company)
+                            .build()));
+            user.setDepartment(adminDept);
+            updated = true;
+        }
+
+        if (user.getDesignation() == null && adminDept != null) {
+            final DepartmentEntity targetDept = adminDept;
+            DesignationEntity adminDesig = designationRepository.findAllByCompanyId(company.getId()).stream()
+                    .filter(d -> "Admin".equalsIgnoreCase(d.getName()))
+                    .findFirst()
+                    .orElseGet(() -> designationRepository.save(DesignationEntity.builder()
+                            .name("Admin")
+                            .description("Admin position")
+                            .active(true)
+                            .company(company)
+                            .department(targetDept)
+                            .build()));
+            user.setDesignation(adminDesig);
+            updated = true;
+        }
+
+        if (updated) {
+            userRepository.save(user);
+        }
     }
 }

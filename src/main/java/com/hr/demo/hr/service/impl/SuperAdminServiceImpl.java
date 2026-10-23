@@ -80,6 +80,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
         companyRepository.save(company);
 
+        Map<String, Object> adminDeptAndDesig = seedDefaultDepartmentsAndDesignations(company);
+        DepartmentEntity adminDept = (DepartmentEntity) adminDeptAndDesig.get("department");
+        DesignationEntity adminDesig = (DesignationEntity) adminDeptAndDesig.get("designation");
+
         UserEntity admin = UserEntity.builder()
                 .email(request.getAdminEmail())
                 .password(passwordEncoder.encode(request.getAdminPassword()))
@@ -88,23 +92,26 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .phone(request.getAdminPhone())
                 .role(Role.COMPANY_ADMIN)
                 .company(company)
+                .department(adminDept)
+                .designation(adminDesig)
                 .build();
 
         userRepository.save(admin);
 
-        seedDefaultDepartmentsAndDesignations(company);
-
         return mapToResponse(company);
     }
 
-    private void seedDefaultDepartmentsAndDesignations(CompanyEntity company) {
-        Map<String, List<String>> deptDesignations = Map.of(
-                "Engineering", List.of("Software Engineer", "Senior Software Engineer", "Tech Lead", "Engineering Manager"),
-                "Human Resources", List.of("HR Executive", "HR Manager"),
-                "Finance", List.of("Finance Executive", "Finance Manager"),
-                "Marketing", List.of("Marketing Executive", "Marketing Manager"),
-                "Operations", List.of("Operations Executive", "Operations Manager")
-        );
+    private Map<String, Object> seedDefaultDepartmentsAndDesignations(CompanyEntity company) {
+        Map<String, List<String>> deptDesignations = new java.util.LinkedHashMap<>();
+        deptDesignations.put("Administration", List.of("Admin"));
+        deptDesignations.put("Engineering", List.of("Software Engineer", "Senior Software Engineer", "Tech Lead", "Engineering Manager"));
+        deptDesignations.put("Human Resources", List.of("HR Executive", "HR Manager"));
+        deptDesignations.put("Finance", List.of("Finance Executive", "Finance Manager"));
+        deptDesignations.put("Marketing", List.of("Marketing Executive", "Marketing Manager"));
+        deptDesignations.put("Operations", List.of("Operations Executive", "Operations Manager"));
+
+        DepartmentEntity adminDept = null;
+        DesignationEntity adminDesig = null;
 
         for (Map.Entry<String, List<String>> entry : deptDesignations.entrySet()) {
             DepartmentEntity dept = DepartmentEntity.builder()
@@ -113,7 +120,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                     .active(true)
                     .company(company)
                     .build();
-            departmentRepository.save(dept);
+            dept = departmentRepository.save(dept);
+
+            if ("Administration".equalsIgnoreCase(entry.getKey())) {
+                adminDept = dept;
+            }
 
             for (String desigName : entry.getValue()) {
                 DesignationEntity desig = DesignationEntity.builder()
@@ -123,9 +134,18 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                         .company(company)
                         .department(dept)
                         .build();
-                designationRepository.save(desig);
+                desig = designationRepository.save(desig);
+
+                if ("Administration".equalsIgnoreCase(entry.getKey()) && "Admin".equalsIgnoreCase(desigName)) {
+                    adminDesig = desig;
+                }
             }
         }
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("department", adminDept);
+        result.put("designation", adminDesig);
+        return result;
     }
 
     private LocalDate calculatePlanExpiry(SubscriptionPlan plan, LocalDate start) {

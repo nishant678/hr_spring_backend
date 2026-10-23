@@ -114,10 +114,14 @@ public class UserResponse {
         if (user.getDepartment() != null) {
             this.departmentId = user.getDepartment().getId();
             this.departmentName = nvl(user.getDepartment().getName());
+        } else if (user.getRole() == com.hr.demo.domain.user.Role.COMPANY_ADMIN) {
+            this.departmentName = "Administration";
         }
         if (user.getDesignation() != null) {
             this.designationId = user.getDesignation().getId();
             this.designationName = nvl(user.getDesignation().getName());
+        } else if (user.getRole() == com.hr.demo.domain.user.Role.COMPANY_ADMIN) {
+            this.designationName = "Admin";
         }
         if (user.getUserRole() != null) {
             this.userRoleId = user.getUserRole().getId();

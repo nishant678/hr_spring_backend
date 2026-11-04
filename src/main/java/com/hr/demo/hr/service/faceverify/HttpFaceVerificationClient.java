@@ -29,7 +29,7 @@ public class HttpFaceVerificationClient implements FaceVerificationClient {
         this.enabled = enabled;
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(5000);
-        factory.setReadTimeout(10000);
+        factory.setReadTimeout(30000);
         this.restClient = RestClient.builder().baseUrl(baseUrl).requestFactory(factory).build();
     }
 

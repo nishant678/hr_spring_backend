@@ -29,13 +29,8 @@ public class FaceRecognitionService {
     public FaceRegistrationResult register(String employeeId, String name, MultipartFile image) {
         log.info("Face registration STARTED for employeeId={}", employeeId);
 
-        // Check if already registered
+        // Replace the current enrollment only after the new selfie passes validation.
         Optional<FaceProfileEntity> existing = faceProfileRepository.findActiveByEmployeeId(employeeId);
-        if (existing.isPresent()) {
-            log.warn("Face ALREADY registered for employeeId={}", employeeId);
-            return FaceRegistrationResult.failed("FACE_ALREADY_REGISTERED",
-                    "Employee already has a registered face. Use re-registration flow.");
-        }
 
         FaceProcessResponse response;
         try {
@@ -46,10 +41,13 @@ public class FaceRecognitionService {
                     "Face verification service unavailable: " + ex.getMessage());
         }
 
+        if (response == null) {
+            return FaceRegistrationResult.failed("SERVICE_UNAVAILABLE", "Face service returned no result");
+        }
         if (!response.success()) {
             log.warn("Python REJECTED registration for employeeId={}: code={}, message={}",
-                    employeeId, response.reason(), response.message());
-            return FaceRegistrationResult.failed(response.reason(), response.message());
+                    employeeId, response.code() != null ? response.code() : response.reason(), response.message());
+            return FaceRegistrationResult.failed(response.code() != null ? response.code() : response.reason(), response.message());
         }
 
         // Validate embedding
@@ -60,13 +58,20 @@ public class FaceRecognitionService {
 
         double[] embedding = new double[response.embedding().size()];
         for (int i = 0; i < response.embedding().size(); i++) {
-            embedding[i] = response.embedding().get(i) != null ? response.embedding().get(i) : 0.0;
+            Double value = response.embedding().get(i);
+            if (value == null || !Double.isFinite(value)) {
+                return FaceRegistrationResult.failed("INVALID_EMBEDDING", "Face embedding contains invalid values");
+            }
+            embedding[i] = value;
         }
 
         if (embedding.length != EXPECTED_DIM) {
             log.error("Embedding dimension mismatch: {} != {} for employeeId={}", embedding.length, EXPECTED_DIM, employeeId);
             return FaceRegistrationResult.failed("INVALID_EMBEDDING",
                     "Embedding dimension " + embedding.length + " != " + EXPECTED_DIM);
+        }
+        if (cosineSimilarity(embedding, embedding) < 0.99) {
+            return FaceRegistrationResult.failed("INVALID_EMBEDDING", "Face embedding is empty");
         }
 
         // Validate quality
@@ -76,7 +81,7 @@ public class FaceRecognitionService {
         }
 
         // Validate liveness
-        if (response.livenessScore() < 0.3) {
+        if (!response.livenessPassed() || response.livenessScore() < 0.3) {
             log.warn("Liveness score {} too low for employeeId={}", response.livenessScore(), employeeId);
             return FaceRegistrationResult.failed("LIVENESS_FAILED", "Liveness check failed");
         }
@@ -88,15 +93,14 @@ public class FaceRecognitionService {
         }
 
         // All validations passed — save embedding
-        FaceProfileEntity profile = FaceProfileEntity.builder()
+        FaceProfileEntity profile = existing.orElseGet(() -> FaceProfileEntity.builder()
                 .employeeId(employeeId)
-                .embedding(embedding)
-                .modelName(response.modelName() != null ? response.modelName() : "buffalo_l")
-                .modelVersion(response.modelVersion() != null ? response.modelVersion() : "v1")
-                .qualityScore(response.qualityScore())
-                .livenessScore(response.livenessScore())
-                .active(true)
-                .build();
+                .active(true).build());
+        profile.setEmbedding(embedding);
+        profile.setModelName(response.modelName() != null ? response.modelName() : "buffalo_l");
+        profile.setModelVersion(response.modelVersion() != null ? response.modelVersion() : "v1");
+        profile.setQualityScore(response.qualityScore());
+        profile.setLivenessScore(response.livenessScore());
         faceProfileRepository.save(profile);
 
         // Update user's face registered flag
@@ -124,8 +128,15 @@ public class FaceRecognitionService {
             return FaceVerificationResponse.failed("SERVICE_UNAVAILABLE", ex.getMessage());
         }
 
+        if (response == null) {
+            return FaceVerificationResponse.failed("SERVICE_UNAVAILABLE", "Face service returned no result");
+        }
         if (!response.success()) {
-            return FaceVerificationResponse.failed(response.reason(), response.message());
+            return FaceVerificationResponse.failed(response.code() != null ? response.code() : response.reason(), response.message());
+        }
+        if (response.faceCount() != 1 || !response.livenessPassed()
+                || response.qualityScore() < QUALITY_THRESHOLD || response.livenessScore() < 0.3) {
+            return FaceVerificationResponse.failed("FACE_QUALITY_FAILED", "Use one clear, uncovered face in good lighting");
         }
 
         List<Double> emb = response.embedding();
@@ -134,7 +145,12 @@ public class FaceRecognitionService {
         }
 
         double[] probe = new double[emb.size()];
-        for (int i = 0; i < emb.size(); i++) probe[i] = emb.get(i) != null ? emb.get(i) : 0.0;
+        for (int i = 0; i < emb.size(); i++) {
+            if (emb.get(i) == null || !Double.isFinite(emb.get(i))) {
+                return FaceVerificationResponse.failed("INVALID_EMBEDDING", "Invalid probe embedding");
+            }
+            probe[i] = emb.get(i);
+        }
 
         double similarity = cosineSimilarity(probe, registered.getEmbedding());
         boolean matched = similarity >= SIMILARITY_THRESHOLD;
@@ -154,7 +170,12 @@ public class FaceRecognitionService {
     }
 
     private void updateFaceRegisteredFlag(String employeeId, boolean registered) {
-        userRepository.findByEmployeeId(employeeId).ifPresent(user -> {
+        var userMatch = userRepository.findByEmployeeId(employeeId);
+        if (userMatch.isEmpty()) {
+            try { userMatch = userRepository.findById(Long.valueOf(employeeId)); }
+            catch (NumberFormatException ignored) { /* Employee IDs need not be numeric. */ }
+        }
+        userMatch.ifPresent(user -> {
             user.setFaceRegistered(registered);
             userRepository.save(user);
         });

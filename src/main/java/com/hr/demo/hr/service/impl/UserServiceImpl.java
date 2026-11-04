@@ -5,6 +5,7 @@ import com.hr.demo.domain.user.Role;
 import com.hr.demo.hr.dto.AddCompanyUserRequest;
 import com.hr.demo.hr.dto.UpdateCompanyUserRequest;
 import com.hr.demo.exceptions.ResourceNotFoundException;
+import com.hr.demo.exceptions.BadRequestException;
 import com.hr.demo.exceptions.UnauthorizedException;
 import com.hr.demo.exceptions.UserAlreadyExistsException;
 import com.hr.demo.hr.entity.*;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.EnumSet;
@@ -325,27 +327,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse updateProfilePhoto(Long userId, MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new ResourceNotFoundException("Profile image is required");
         }
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Long companyId = user.getCompany() != null ? user.getCompany().getId() : 0L;
-        String storedPath = fileStorageService.storeProfilePhoto(file, companyId);
-        user.setProfilePhoto("/api/profile-photo/" + storedPath);
-        userRepository.save(user);
-
         String employeeId = (user.getEmployeeId() != null && !user.getEmployeeId().isBlank())
                 ? user.getEmployeeId() : String.valueOf(user.getId());
         String name = user.getFirstName()
                 + (user.getLastName() != null && !user.getLastName().isBlank() ? " " + user.getLastName() : "");
-        try {
-            faceRecognitionService.register(employeeId, name, file);
-            log.info("Face re-registered after profile photo update for employeeId={}:", employeeId);
-        } catch (Exception ex) {
-            log.warn("Face re-register failed for employeeId={}: {}", employeeId, ex.getMessage());
+        var registration = faceRecognitionService.register(employeeId, name, file);
+        if (!registration.success()) {
+            throw new BadRequestException(registration.reason() + ": " + registration.message());
         }
+        Long companyId = user.getCompany() != null ? user.getCompany().getId() : 0L;
+        String storedPath = fileStorageService.storeProfilePhoto(file, companyId);
+        user.setProfilePhoto("/api/profile-photo/" + storedPath);
+        user.setFaceRegistered(true);
+        userRepository.save(user);
 
         return getUserProfile(user.getId());
     }

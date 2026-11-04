@@ -18,6 +18,8 @@ public class FaceProfileEntity {
     private String employeeId;
 
     @Column(columnDefinition = "vector(512)")
+    @Convert(converter = FaceEmbeddingConverter.class)
+    @org.hibernate.annotations.ColumnTransformer(read = "embedding::text", write = "?::vector")
     private double[] embedding;
 
     @Column(name = "model_name", nullable = false, length = 100)

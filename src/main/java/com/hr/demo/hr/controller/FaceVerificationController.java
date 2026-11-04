@@ -47,7 +47,7 @@ public class FaceVerificationController {
                 faceRecognitionService.register(employeeId, name, image);
 
         if (!result.success()) {
-            throw new BadRequestException(result.message());
+            throw new BadRequestException(result.reason() + ": " + result.message());
         }
 
         log.info("Face registered for employeeId={}", employeeId);

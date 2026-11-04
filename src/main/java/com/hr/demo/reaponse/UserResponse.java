@@ -27,6 +27,7 @@ public class UserResponse {
     private String aadhaarNumber;
     private String passportNumber;
     private String profilePhoto;
+    private boolean faceRegistered;
     private String email;
     private String phone;
 
@@ -107,6 +108,7 @@ public class UserResponse {
         this.aadhaarNumber = nvl(user.getAadhaarNumber());
         this.passportNumber = nvl(user.getPassportNumber());
         this.profilePhoto = nvl(user.getProfilePhoto());
+        this.faceRegistered = user.isFaceRegistered();
         this.email = nvl(user.getEmail());
         this.phone = nvl(user.getPhone());
         this.role = user.getRole().name();

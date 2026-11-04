@@ -12,8 +12,7 @@ import com.hr.demo.hr.repository.CompanyRepository;
 import com.hr.demo.hr.repository.UserRepository;
 import com.hr.demo.hr.service.AttendanceService;
 import com.hr.demo.hr.service.FileStorageService;
-import com.hr.demo.hr.service.faceverify.FaceVerificationClient;
-import com.hr.demo.hr.service.faceverify.FaceVerificationException;
+import com.hr.demo.hr.service.faceverify.FaceRecognitionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +33,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final FileStorageService fileStorageService;
-    private final FaceVerificationClient faceVerificationClient;
+    private final FaceRecognitionService faceRecognitionService;
 
     @Override
     public AttendanceResponse checkIn(Long userId, Long companyId, Double latitude, Double longitude,
@@ -48,26 +47,8 @@ public class AttendanceServiceImpl implements AttendanceService {
         LocalDate today = LocalDate.parse(date);
         LocalTime now = LocalTime.parse(checkInTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-        String faceImageUrl = null;
-        if (faceImage != null && !faceImage.isEmpty()) {
-            if (faceVerificationClient.isEnabled()) {
-                String employeeId = (user.getEmployeeId() != null && !user.getEmployeeId().isBlank())
-                        ? user.getEmployeeId()
-                        : String.valueOf(user.getId());
-                FaceVerificationClient.VerifyOutcome outcome;
-                try {
-                    outcome = faceVerificationClient.verify(employeeId, faceImage);
-                } catch (FaceVerificationException ex) {
-                    throw new BadRequestException("Face verification unavailable: " + ex.getMessage());
-                }
-                if (!outcome.matched()) {
-                    throw new BadRequestException(
-                            "Face verification failed — chehra match nahi hua / Face does not match the registered employee "
-                                    + "(score " + outcome.score() + ")");
-                }
-            }
-            faceImageUrl = fileStorageService.storeFile(faceImage, companyId, userId);
-        }
+        verifyAttendanceFace(user, faceImage);
+        String faceImageUrl = fileStorageService.storeFile(faceImage, companyId, userId);
 
         AttendanceStatus status = determineStatus(now);
         double hours = 0.0;
@@ -100,25 +81,7 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new BadRequestException("Already checked out today");
         }
 
-        if (faceImage != null && !faceImage.isEmpty()) {
-            if (faceVerificationClient.isEnabled()) {
-                UserEntity user = findUser(userId);
-                String employeeId = (user.getEmployeeId() != null && !user.getEmployeeId().isBlank())
-                        ? user.getEmployeeId()
-                        : String.valueOf(user.getId());
-                FaceVerificationClient.VerifyOutcome outcome;
-                try {
-                    outcome = faceVerificationClient.verify(employeeId, faceImage);
-                } catch (FaceVerificationException ex) {
-                    throw new BadRequestException("Face verification unavailable: " + ex.getMessage());
-                }
-                if (!outcome.matched()) {
-                    throw new BadRequestException(
-                            "Face verification failed — chehra match nahi hua / Face does not match the registered employee "
-                                    + "(score " + outcome.score() + ")");
-                }
-            }
-        }
+        verifyAttendanceFace(findUser(userId), faceImage);
 
         LocalTime now = LocalTime.parse(checkOutTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
         attendance.setCheckOutTime(now);
@@ -166,6 +129,18 @@ public class AttendanceServiceImpl implements AttendanceService {
                         throw new BadRequestException("Already checked in today. Please check out first.");
                     }
                 });
+    }
+
+    private void verifyAttendanceFace(UserEntity user, MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new BadRequestException("FACE_IMAGE_REQUIRED: Capture a fresh selfie for attendance");
+        }
+        String employeeId = user.getEmployeeId() != null && !user.getEmployeeId().isBlank()
+                ? user.getEmployeeId() : String.valueOf(user.getId());
+        var result = faceRecognitionService.verify(employeeId, image);
+        if (!result.matched()) {
+            throw new BadRequestException(result.reason() + ": " + result.message());
+        }
     }
 
     private AttendanceStatus determineStatus(LocalTime checkInTime) {

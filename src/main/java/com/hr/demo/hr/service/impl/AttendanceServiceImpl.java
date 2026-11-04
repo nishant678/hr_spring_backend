@@ -47,8 +47,9 @@ public class AttendanceServiceImpl implements AttendanceService {
         LocalDate today = LocalDate.parse(date);
         LocalTime now = LocalTime.parse(checkInTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-        verifyAttendanceFace(user, faceImage);
-        String faceImageUrl = fileStorageService.storeFile(faceImage, companyId, userId);
+        verifyAttendanceFace(user, company, faceImage);
+        String faceImageUrl = company.isFaceVerificationAttendance()
+                ? fileStorageService.storeFile(faceImage, companyId, userId) : null;
 
         AttendanceStatus status = determineStatus(now);
         double hours = 0.0;
@@ -81,7 +82,7 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new BadRequestException("Already checked out today");
         }
 
-        verifyAttendanceFace(findUser(userId), faceImage);
+        verifyAttendanceFace(findUser(userId), findCompany(companyId), faceImage);
 
         LocalTime now = LocalTime.parse(checkOutTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
         attendance.setCheckOutTime(now);
@@ -131,7 +132,15 @@ public class AttendanceServiceImpl implements AttendanceService {
                 });
     }
 
-    private void verifyAttendanceFace(UserEntity user, MultipartFile image) {
+    private void verifyAttendanceFace(UserEntity user, CompanyEntity company, MultipartFile image) {
+        if (user.getCompany() == null || !company.getId().equals(user.getCompany().getId())) {
+            throw new BadRequestException("Company does not match the employee");
+        }
+        if (company.getStatus() != com.hr.demo.domain.company.CompanyStatus.ACTIVE) {
+            throw new BadRequestException("Company is inactive");
+        }
+        // Only the server-owned company policy can disable biometric attendance.
+        if (!company.isFaceVerificationAttendance()) return;
         if (image == null || image.isEmpty()) {
             throw new BadRequestException("FACE_IMAGE_REQUIRED: Capture a fresh selfie for attendance");
         }

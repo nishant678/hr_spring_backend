@@ -39,6 +39,8 @@ public class CompanyResponse {
     private String timezone;
     private String currency;
     private Boolean attendanceMandatory;
+    private boolean faceVerificationAttendance;
+    private boolean taskEnabled;
     private Boolean autoEmailReports;
 
     private CompanyStatus status;

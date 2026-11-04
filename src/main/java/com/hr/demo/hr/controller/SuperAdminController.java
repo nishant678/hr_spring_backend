@@ -35,6 +35,21 @@ public class SuperAdminController {
         return superAdminService.getAllCompanies();
     }
 
+    @PutMapping("/companies/{id}/permissions")
+    public CompanyResponse updatePermissions(@PathVariable Long id,
+            @Valid @RequestBody com.hr.demo.hr.dto.CompanyPermissionsRequest request) {
+        return superAdminService.updatePermissions(id, request.faceVerificationAttendance(), request.task());
+    }
+
+    @GetMapping("/app-settings")
+    public java.util.Map<String, Object> appSettings() {
+        return java.util.Map.of("companies", superAdminService.getAllCompanies(), "permissions", List.of(
+                java.util.Map.of("key", "face_attendense", "responseField", "faceVerificationAttendance",
+                        "label", "Face Attendance", "description", "Require selfie verification for check-in and check-out."),
+                java.util.Map.of("key", "task", "responseField", "taskEnabled",
+                        "label", "Task", "description", "Show the Task feature for this company's users.")));
+    }
+
     @PutMapping("/companies/{id}/deactivate")
     public CompanyResponse deactivate(@PathVariable Long id) {
         return superAdminService.deactivateCompany(id);

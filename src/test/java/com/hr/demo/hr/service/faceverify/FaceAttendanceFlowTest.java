@@ -30,7 +30,7 @@ class FaceAttendanceFlowTest {
     final MockMultipartFile image = new MockMultipartFile("image", "selfie.jpg", "image/jpeg", new byte[]{1});
     final AtomicReference<FaceProfileEntity> enrollment = new AtomicReference<>();
     final AtomicReference<AttendanceEntity> record = new AtomicReference<>();
-    final CompanyEntity company = CompanyEntity.builder().id(7L).build();
+    final CompanyEntity company = CompanyEntity.builder().id(7L).faceVerificationAttendance(true).status(com.hr.demo.domain.company.CompanyStatus.ACTIVE).build();
     final UserEntity user = UserEntity.builder().id(42L).employeeId("EMP42").role(Role.EMPLOYEE).company(company).build();
 
     @BeforeEach void setup() {
@@ -126,5 +126,35 @@ class FaceAttendanceFlowTest {
         assertThatThrownBy(() -> attendance.checkIn(42L,7L,null,null,null,image,"09:00:00","2026-11-05"))
                 .hasMessageContaining("SERVICE_UNAVAILABLE");
         verify(records, never()).save(any());
+    }
+
+    @Test void disabledFacePermissionAllowsDirectCheckInAndCheckOutWithoutPython() {
+        company.setFaceVerificationAttendance(false);
+        assertThat(attendance.checkIn(42L,7L,null,null,null,null,"09:00:00","2026-11-05").getFaceImageUrl()).isNull();
+        assertThat(attendance.checkOut(42L,7L,"18:00:00","2026-11-05",null).getHoursWorked()).isEqualTo(9.0);
+        verifyNoInteractions(python, files, faces);
+    }
+
+    @Test void enabledFacePermissionCannotBeBypassedWithAMissingSelfie() {
+        company.setFaceVerificationAttendance(true);
+        assertThatThrownBy(() -> attendance.checkIn(42L,7L,null,null,null,null,"09:00:00","2026-11-05"))
+                .hasMessageContaining("FACE_IMAGE_REQUIRED");
+        verify(records, never()).save(any());
+    }
+
+    @Test void policyChangesApplyToTheNextAttendanceAction() {
+        company.setFaceVerificationAttendance(false);
+        attendance.checkIn(42L,7L,null,null,null,null,"09:00:00","2026-11-05");
+        company.setFaceVerificationAttendance(true);
+        assertThatThrownBy(() -> attendance.checkOut(42L,7L,"18:00:00","2026-11-05",null))
+                .hasMessageContaining("FACE_IMAGE_REQUIRED");
+        assertThat(record.get().getCheckOutTime()).isNull();
+    }
+
+    @Test void wrongCompanyCannotUseAnotherCompanyPolicy() {
+        company.setFaceVerificationAttendance(false);
+        user.setCompany(CompanyEntity.builder().id(99L).build());
+        assertThatThrownBy(() -> attendance.checkIn(42L,7L,null,null,null,null,"09:00:00","2026-11-05"))
+                .hasMessageContaining("Company does not match");
     }
 }

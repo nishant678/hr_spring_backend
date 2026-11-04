@@ -68,6 +68,12 @@ public class CompanyEntity {
     private String timezone; // e.g., "Asia/Kolkata"
     private String currency; // e.g., "INR"
     private Boolean attendanceMandatory; // Employees must mark attendance
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean faceVerificationAttendance = false;
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean taskEnabled = false;
     private Boolean autoEmailReports; // Auto-send attendance reports
 
     @Enumerated(EnumType.STRING)

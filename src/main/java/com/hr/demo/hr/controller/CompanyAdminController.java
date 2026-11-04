@@ -93,6 +93,8 @@ public class CompanyAdminController {
                 .timezone(company.getTimezone())
                 .currency(company.getCurrency())
                 .attendanceMandatory(company.getAttendanceMandatory())
+                .faceVerificationAttendance(company.isFaceVerificationAttendance())
+                .taskEnabled(company.isTaskEnabled())
                 .autoEmailReports(company.getAutoEmailReports())
                 .status(company.getStatus())
                 .industryType(company.getIndustryType())

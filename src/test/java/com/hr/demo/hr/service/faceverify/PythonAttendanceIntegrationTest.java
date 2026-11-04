@@ -31,7 +31,7 @@ class PythonAttendanceIntegrationTest {
 
     @Test void profileEnrollmentAndBothAttendanceActionsUsePythonAndPostgres() throws Exception {
         String tag=UUID.randomUUID().toString().substring(0,8);
-        var company=companies.saveAndFlush(CompanyEntity.builder().companyName("Flow Test " + tag)
+        var company=companies.saveAndFlush(CompanyEntity.builder().faceVerificationAttendance(true).companyName("Flow Test " + tag)
                 .ownerName("Test").email(tag+"@example.invalid").phone(tag).industryType(IndustryType.SOFTWARE).build());
         var user=users.saveAndFlush(UserEntity.builder().company(company).employeeId("TEST"+tag)
                 .firstName("Flow").lastName("Test").email("user"+tag+"@example.invalid").password("test-only")

@@ -18,7 +18,8 @@ class ProfileEnrollmentTest {
         FaceRecognitionService faces = mock(FaceRecognitionService.class);
         var service = new UserServiceImpl(users, mock(PasswordEncoder.class), mock(DepartmentRepository.class),
                 mock(DesignationRepository.class), mock(RoleRepository.class), mock(AssetRepository.class), files, faces);
-        var user = UserEntity.builder().id(42L).employeeId("EMP42").firstName("Test").profilePhoto("old.jpg").build();
+        var user = UserEntity.builder().id(42L).employeeId("EMP42").firstName("Test").profilePhoto("old.jpg")
+                .company(com.hr.demo.hr.entity.CompanyEntity.builder().id(7L).faceVerificationAttendance(true).build()).build();
         var image = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[]{1});
         when(users.findById(42L)).thenReturn(Optional.of(user));
         when(faces.register(eq("EMP42"),any(),eq(image))).thenReturn(FaceRecognitionService.FaceRegistrationResult.failed("MASK_DETECTED", "Remove mask"));

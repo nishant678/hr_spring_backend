@@ -16,4 +16,5 @@ public interface SuperAdminService {
     CompanyResponse deactivateCompany(Long companyId);
 
     CompanyResponse activateCompany(Long companyId);
+    CompanyResponse updatePermissions(Long companyId, boolean faceVerificationAttendance, Boolean task);
 }

@@ -75,6 +75,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .timezone(request.getTimezone())
                 .currency(request.getCurrency())
                 .attendanceMandatory(request.getAttendanceMandatory())
+                .faceVerificationAttendance(Boolean.TRUE.equals(request.getFaceVerificationAttendance()))
                 .autoEmailReports(request.getAutoEmailReports())
                 .build();
 
@@ -184,6 +185,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .timezone(company.getTimezone())
                 .currency(company.getCurrency())
                 .attendanceMandatory(company.getAttendanceMandatory())
+                .faceVerificationAttendance(company.isFaceVerificationAttendance())
+                .taskEnabled(company.isTaskEnabled())
                 .autoEmailReports(company.getAutoEmailReports())
                 .status(company.getStatus())
                 .industryType(company.getIndustryType())
@@ -219,6 +222,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         company.setTimezone(request.getTimezone());
         company.setCurrency(request.getCurrency());
         company.setAttendanceMandatory(request.getAttendanceMandatory());
+        if (request.getFaceVerificationAttendance() != null) {
+            company.setFaceVerificationAttendance(request.getFaceVerificationAttendance());
+        }
         company.setAutoEmailReports(request.getAutoEmailReports());
         company.setIndustryType(request.getIndustryType());
 
@@ -231,6 +237,16 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Transactional(readOnly = true)
     public List<CompanyResponse> getAllCompanies() {
         return companyRepository.findAll().stream().map(this::mapToResponse).toList();
+    }
+
+    @Override
+    public CompanyResponse updatePermissions(Long companyId, boolean faceVerificationAttendance, Boolean task) {
+        CompanyEntity company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new com.hr.demo.exceptions.ResourceNotFoundException("Company not found"));
+        company.setFaceVerificationAttendance(faceVerificationAttendance);
+        if (task != null) company.setTaskEnabled(task);
+        companyRepository.save(company);
+        return mapToResponse(company);
     }
 
     @Override

@@ -338,14 +338,19 @@ public class UserServiceImpl implements UserService {
                 ? user.getEmployeeId() : String.valueOf(user.getId());
         String name = user.getFirstName()
                 + (user.getLastName() != null && !user.getLastName().isBlank() ? " " + user.getLastName() : "");
-        var registration = faceRecognitionService.register(employeeId, name, file);
-        if (!registration.success()) {
-            throw new BadRequestException(registration.reason() + ": " + registration.message());
+        boolean requiresFace = user.getCompany() != null && user.getCompany().isFaceVerificationAttendance();
+        if (requiresFace) {
+            var registration = faceRecognitionService.register(employeeId, name, file);
+            if (!registration.success()) {
+                throw new BadRequestException(registration.reason() + ": " + registration.message());
+            }
+        } else {
+            faceRecognitionService.resetRegistration(employeeId);
         }
         Long companyId = user.getCompany() != null ? user.getCompany().getId() : 0L;
         String storedPath = fileStorageService.storeProfilePhoto(file, companyId);
         user.setProfilePhoto("/api/profile-photo/" + storedPath);
-        user.setFaceRegistered(true);
+        user.setFaceRegistered(requiresFace);
         userRepository.save(user);
 
         return getUserProfile(user.getId());

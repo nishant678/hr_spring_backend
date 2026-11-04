@@ -67,6 +67,7 @@ public class CreateCompanyRequest {
     private String timezone; // optional
     private String currency; // optional
     private Boolean attendanceMandatory; // optional
+    private Boolean faceVerificationAttendance; // null preserves existing policy
     private Boolean autoEmailReports; // optional
 
     // ===== ADMIN USER =====

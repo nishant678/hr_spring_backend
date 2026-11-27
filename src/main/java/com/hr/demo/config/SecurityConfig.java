@@ -3,10 +3,9 @@ package com.hr.demo.config;
 import com.hr.demo.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.*;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,15 +37,18 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")
                         .permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/public/website/**").permitAll()
                         .requestMatchers("/api/profile-photo/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
+                        .requestMatchers("/api/admin/website/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR")
                         .requestMatchers("/api/super-admin/**").hasRole("MASTER_ADMIN")
                         .requestMatchers("/api/company-admin/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN")
                         .requestMatchers("/api/roles/**").hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN")
@@ -59,7 +61,8 @@ public class SecurityConfig {
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
                         .requestMatchers("/api/payroll/**", "/api/assets/**")
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR")
-                        .requestMatchers("/api/leaves/**", "/api/expenses/**", "/api/files/**", "/api/holidays/**", "/api/shifts/**")
+                        .requestMatchers("/api/leaves/**", "/api/expenses/**", "/api/files/**", "/api/holidays/**",
+                                "/api/shifts/**")
                         .hasAnyRole("MASTER_ADMIN", "COMPANY_ADMIN", "HR", "EMPLOYEE")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
@@ -101,8 +104,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(
-                List.of("http://localhost:3000", "http://127.0.0.1:3000", "https://*.onrender.com"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                List.of(
+                        "http://localhost:3000",
+                        "http://127.0.0.1:3000",
+                        "http://localhost:4200",
+                        "http://127.0.0.1:4200",
+                        "http://localhost:4300",
+                        "https://*.onrender.com"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

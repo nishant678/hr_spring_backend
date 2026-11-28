@@ -37,6 +37,8 @@ public class CompanyEntity {
     private String phone;
 
     private String website;
+
+    @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
 
     // ===== INDUSTRY =====

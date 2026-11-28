@@ -59,4 +59,31 @@ public class SuperAdminController {
     public CompanyResponse activate(@PathVariable Long id) {
         return superAdminService.activateCompany(id);
     }
+
+    @PostMapping(value = "/companies/upload-logo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public java.util.Map<String, String> uploadCompanyLogo(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+        String original = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "logo.png";
+        String ext = original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".png";
+        java.nio.file.Path dir = java.nio.file.Paths.get("uploads", "company-logos").toAbsolutePath().normalize();
+        java.nio.file.Files.createDirectories(dir);
+        String filename = java.util.UUID.randomUUID() + ext;
+        file.transferTo(dir.resolve(filename).toFile());
+        return java.util.Map.of("logoUrl", "/api/super-admin/company-logo/" + filename);
+    }
+
+    @GetMapping("/company-logo/{filename:.+}")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.Resource> getCompanyLogo(
+            @PathVariable String filename) throws java.io.IOException {
+        java.nio.file.Path filePath = java.nio.file.Paths.get("uploads", "company-logos")
+                .toAbsolutePath().normalize().resolve(filename).normalize();
+        if (!java.nio.file.Files.exists(filePath)) {
+            return org.springframework.http.ResponseEntity.notFound().build();
+        }
+        String contentType = java.nio.file.Files.probeContentType(filePath);
+        org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(filePath.toUri());
+        return org.springframework.http.ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType != null ? contentType : "image/png"))
+                .body(resource);
+    }
 }

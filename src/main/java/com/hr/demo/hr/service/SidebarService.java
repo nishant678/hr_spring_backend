@@ -65,33 +65,25 @@ public class SidebarService {
     private List<SidebarSectionDto> buildCompanyAdminMenu() {
         return List.of(
             new SidebarSectionDto("Main Menu", List.of(
-                SidebarItemDto.group("sub-9", "Dashboard", "ti ti-dashboard", List.of(
-                    SidebarItemDto.child("nav-1", "Dashboard", "/dashboard"),
-                    SidebarItemDto.child("nav-2", "Sales Overview", "/sales-dashboard"),
-                    SidebarItemDto.child("nav-3", "Executive Dashboard", "/executive-dashboard")
-                )),
-                SidebarItemDto.group("sub-company-admin", "Company Admin", "ti ti-building-skyscraper", List.of(
-                    SidebarItemDto.child("nav-ca-users", "Manage Users", "/manage-users"),
-                    SidebarItemDto.child("nav-ca-roles", "Roles & Permissions", "/roles-permissions"),
-                    SidebarItemDto.child("nav-ca-settings", "Company Settings", "/company-settings")
-                )),
-                SidebarItemDto.group("sub-22", "Applications", "ti ti-brand-airtable", List.of(
-                    SidebarItemDto.child("nav-10", "Chat", "/chat"),
-                    SidebarItemDto.child("nav-14", "Calendar", "/calendar"),
-                    SidebarItemDto.child("nav-15", "Email", "/email"),
-                    SidebarItemDto.child("nav-16", "To Do", "/todo")
+                SidebarItemDto.leaf("nav-ca-dashboard", "Dashboard", "ti ti-dashboard", "/dashboard"),
+                SidebarItemDto.group("sub-company-setup", "Company Setup", "ti ti-building-skyscraper", List.of(
+                    SidebarItemDto.child("nav-ca-dept", "Department", "/departments"),
+                    SidebarItemDto.child("nav-ca-desig", "Designation", "/designations"),
+                    SidebarItemDto.child("nav-ca-shift", "Shift", "/shifts"),
+                    SidebarItemDto.child("nav-ca-assets", "Assets", "/assets"),
+                    SidebarItemDto.child("nav-ca-holidays", "Holiday", "/holidays")
                 ))
             )),
-            new SidebarSectionDto("CRM", List.of(
-                SidebarItemDto.leaf("nav-32", "Contacts", "ti ti-user-up", "/contacts"),
-                SidebarItemDto.leaf("nav-33", "Companies", "ti ti-building-community", "/companies"),
-                SidebarItemDto.leaf("nav-36", "Deals", "ti ti-medal", "/deals"),
-                SidebarItemDto.leaf("nav-37", "Leads", "ti ti-chart-arcs", "/leads"),
-                SidebarItemDto.leaf("nav-38", "Pipeline", "ti ti-timeline-event-exclamation", "/pipeline")
+            new SidebarSectionDto("HRM & Operations", List.of(
+                SidebarItemDto.leaf("nav-ca-employee", "Employee", "ti ti-users", "/employees"),
+                SidebarItemDto.leaf("nav-ca-attendance", "Attendance", "ti ti-calendar-check", "/attendance"),
+                SidebarItemDto.leaf("nav-ca-leaves", "Leave Requests", "ti ti-message-star", "/leave-requests"),
+                SidebarItemDto.leaf("nav-ca-expense", "Expense", "ti ti-receipt-2", "/expenses"),
+                SidebarItemDto.leaf("nav-ca-payroll", "Payroll", "ti ti-cash", "/payroll"),
+                SidebarItemDto.leaf("nav-ca-announcement", "Announcement", "ti ti-speakerphone", "/announcements")
             )),
-            new SidebarSectionDto("Reports", List.of(
-                SidebarItemDto.leaf("nav-86", "Lead Reports", "ti ti-report-analytics", "/lead-reports"),
-                SidebarItemDto.leaf("nav-87", "Deal Reports", "ti ti-report", "/deal-reports")
+            new SidebarSectionDto("Account", List.of(
+                SidebarItemDto.leaf("nav-ca-profile", "Profile", "ti ti-user-circle", "/profile-settings")
             ))
         );
     }

@@ -34,6 +34,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
     public CompanyResponse createCompany(CreateCompanyRequest request) {
 
         if (companyRepository.existsByEmailIgnoreCase(request.getEmail()))
@@ -194,6 +195,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
+    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
     public CompanyResponse updateCompany(Long companyId, CreateCompanyRequest request) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -234,12 +236,15 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
+    @org.springframework.cache.annotation.Cacheable(value = "superAdminCompanies", sync = true)
     @Transactional(readOnly = true)
     public List<CompanyResponse> getAllCompanies() {
-        return companyRepository.findAll().stream().map(this::mapToResponse).toList();
+        return companyRepository.findAllByOrderByIdDesc().stream().map(this::mapToResponse).toList();
     }
 
     @Override
+    @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
     public CompanyResponse updatePermissions(Long companyId, boolean faceVerificationAttendance, Boolean task) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new com.hr.demo.exceptions.ResourceNotFoundException("Company not found"));
@@ -250,6 +255,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
+    @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
     public CompanyResponse deactivateCompany(Long companyId) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -259,10 +266,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
 
         company.setStatus(CompanyStatus.INACTIVE);
-        return mapToResponse(company);
+        return mapToResponse(companyRepository.save(company));
     }
 
     @Override
+    @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
     public CompanyResponse activateCompany(Long companyId) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -272,6 +281,47 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
 
         company.setStatus(CompanyStatus.ACTIVE);
-        return mapToResponse(company);
+        return mapToResponse(companyRepository.save(company));
+    }
+
+    private static final java.util.Map<SubscriptionPlan, Integer> DEFAULT_PLAN_LIMITS =
+            new java.util.EnumMap<>(SubscriptionPlan.class);
+
+    static {
+        DEFAULT_PLAN_LIMITS.put(SubscriptionPlan.TRIAL, 15);
+        DEFAULT_PLAN_LIMITS.put(SubscriptionPlan.BASIC, 50);
+        DEFAULT_PLAN_LIMITS.put(SubscriptionPlan.PREMIUM, 200);
+        DEFAULT_PLAN_LIMITS.put(SubscriptionPlan.ENTERPRISE, 1000);
+    }
+
+    @Override
+    @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
+    public CompanyResponse upgradeCompanyPlan(
+            Long companyId,
+            com.hr.demo.hr.dto.UpgradeCompanyPlanRequest request) {
+        CompanyEntity company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new com.hr.demo.exceptions.ResourceNotFoundException("Company not found"));
+
+        LocalDate start = request.subscriptionStart() != null
+                ? request.subscriptionStart()
+                : LocalDate.now();
+        LocalDate end = request.subscriptionEnd() != null
+                ? request.subscriptionEnd()
+                : ("Yearly".equalsIgnoreCase(request.planCycle())
+                        ? start.plusYears(1)
+                        : calculatePlanExpiry(request.subscriptionPlan(), start));
+
+        int limit = request.employeeLimit() != null
+                ? request.employeeLimit()
+                : DEFAULT_PLAN_LIMITS.getOrDefault(request.subscriptionPlan(), 50);
+
+        company.setSubscriptionPlan(request.subscriptionPlan());
+        company.setEmployeeLimit(limit);
+        company.setSubscriptionStart(start);
+        company.setSubscriptionEnd(end);
+        company.setStatus(CompanyStatus.ACTIVE);
+
+        return mapToResponse(companyRepository.save(company));
     }
 }

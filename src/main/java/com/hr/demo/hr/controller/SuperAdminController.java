@@ -30,6 +30,13 @@ public class SuperAdminController {
         return superAdminService.updateCompany(id, request);
     }
 
+    @PutMapping("/companies/{id}/upgrade-plan")
+    public CompanyResponse upgradeCompanyPlan(
+            @PathVariable Long id,
+            @Valid @RequestBody com.hr.demo.hr.dto.UpgradeCompanyPlanRequest request) {
+        return superAdminService.upgradeCompanyPlan(id, request);
+    }
+
     @GetMapping("/companies")
     public List<CompanyResponse> getCompanies() {
         return superAdminService.getAllCompanies();

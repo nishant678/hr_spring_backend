@@ -24,6 +24,8 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, Long> {
 
     boolean existsByPhone(String phone);
 
+    List<CompanyEntity> findAllByOrderByIdDesc();
+
 
     // ================= LOGIN / TENANT DETECTION =================
 

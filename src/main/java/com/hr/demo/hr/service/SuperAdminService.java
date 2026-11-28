@@ -1,6 +1,7 @@
 package com.hr.demo.hr.service;
 
 import com.hr.demo.hr.dto.CreateCompanyRequest;
+import com.hr.demo.hr.dto.SubscriptionPageResponse;
 import com.hr.demo.hr.dto.UpgradeCompanyPlanRequest;
 import com.hr.demo.reaponse.CompanyResponse;
 
@@ -13,6 +14,8 @@ public interface SuperAdminService {
     CompanyResponse updateCompany(Long companyId, CreateCompanyRequest request);
 
     CompanyResponse upgradeCompanyPlan(Long companyId, UpgradeCompanyPlanRequest request);
+
+    SubscriptionPageResponse getSubscriptions(int page, int size, String status, String plan, String search, String sort);
 
     List<CompanyResponse> getAllCompanies();
 

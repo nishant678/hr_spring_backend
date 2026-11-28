@@ -5,6 +5,7 @@ import com.hr.demo.hr.entity.CompanyEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ import java.util.Optional;
  * Spring Data JPA repository for CompanyEntity.
  */
 @Repository
-public interface CompanyRepository extends JpaRepository<CompanyEntity, Long> {
+public interface CompanyRepository extends JpaRepository<CompanyEntity, Long>, JpaSpecificationExecutor<CompanyEntity> {
 
     // ================= CREATE VALIDATION =================
 
@@ -25,6 +26,8 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, Long> {
     boolean existsByPhone(String phone);
 
     List<CompanyEntity> findAllByOrderByIdDesc();
+
+    long countBySubscriptionPlanAndStatus(SubscriptionPlan plan, CompanyStatus status);
 
 
     // ================= LOGIN / TENANT DETECTION =================

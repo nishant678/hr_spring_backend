@@ -31,7 +31,8 @@ public class WebsiteCacheAndRateLimitConfig {
             "websitePlans",
             "websiteJobs",
             "websiteBlogs",
-            "superAdminCompanies"
+            "superAdminCompanies",
+            "superAdminSubscriptions"
         );
     }
 

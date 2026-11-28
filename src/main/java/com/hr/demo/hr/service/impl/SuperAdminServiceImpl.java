@@ -34,7 +34,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"superAdminCompanies", "superAdminSubscriptions"}, allEntries = true)
     public CompanyResponse createCompany(CreateCompanyRequest request) {
 
         if (companyRepository.existsByEmailIgnoreCase(request.getEmail()))
@@ -195,7 +195,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"superAdminCompanies", "superAdminSubscriptions"}, allEntries = true)
     public CompanyResponse updateCompany(Long companyId, CreateCompanyRequest request) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -244,7 +244,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"superAdminCompanies", "superAdminSubscriptions"}, allEntries = true)
     public CompanyResponse updatePermissions(Long companyId, boolean faceVerificationAttendance, Boolean task) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new com.hr.demo.exceptions.ResourceNotFoundException("Company not found"));
@@ -256,7 +256,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"superAdminCompanies", "superAdminSubscriptions"}, allEntries = true)
     public CompanyResponse deactivateCompany(Long companyId) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -271,7 +271,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"superAdminCompanies", "superAdminSubscriptions"}, allEntries = true)
     public CompanyResponse activateCompany(Long companyId) {
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -296,7 +296,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(value = "superAdminCompanies", allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"superAdminCompanies", "superAdminSubscriptions"}, allEntries = true)
     public CompanyResponse upgradeCompanyPlan(
             Long companyId,
             com.hr.demo.hr.dto.UpgradeCompanyPlanRequest request) {
@@ -323,5 +323,94 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         company.setStatus(CompanyStatus.ACTIVE);
 
         return mapToResponse(companyRepository.save(company));
+    }
+
+    private static final java.util.Map<SubscriptionPlan, Long> PLAN_PRICES =
+            new java.util.EnumMap<>(SubscriptionPlan.class);
+
+    static {
+        PLAN_PRICES.put(SubscriptionPlan.TRIAL, 0L);
+        PLAN_PRICES.put(SubscriptionPlan.BASIC, 29L);
+        PLAN_PRICES.put(SubscriptionPlan.PREMIUM, 200L);
+        PLAN_PRICES.put(SubscriptionPlan.ENTERPRISE, 999L);
+    }
+
+    @Override
+    @org.springframework.cache.annotation.Cacheable(
+        value = "superAdminSubscriptions",
+        key = "#page + '-' + #size + '-' + (#status?:'ALL') + '-' + (#plan?:'ALL') + '-' + (#search?:'') + '-' + (#sort?:'RECENT')",
+        sync = true
+    )
+    @Transactional(readOnly = true)
+    public com.hr.demo.hr.dto.SubscriptionPageResponse getSubscriptions(
+            int page, int size, String status, String plan, String search, String sort) {
+        CompanyStatus parsedStatus = null;
+        if ("Paid".equalsIgnoreCase(status) || "ACTIVE".equalsIgnoreCase(status)) {
+            parsedStatus = CompanyStatus.ACTIVE;
+        } else if ("Unpaid".equalsIgnoreCase(status) || "INACTIVE".equalsIgnoreCase(status)) {
+            parsedStatus = CompanyStatus.INACTIVE;
+        }
+
+        SubscriptionPlan parsedPlan = null;
+        if (plan != null && !plan.isBlank() && !"ALL".equalsIgnoreCase(plan)) {
+            parsedPlan = SubscriptionPlan.valueOf(plan.trim().toUpperCase());
+        }
+
+        String normalizedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
+
+        org.springframework.data.domain.Sort sortOrder = switch (sort != null ? sort.toUpperCase() : "RECENT") {
+            case "ASC" -> org.springframework.data.domain.Sort.by("companyName").ascending();
+            case "DESC" -> org.springframework.data.domain.Sort.by("companyName").descending();
+            default -> org.springframework.data.domain.Sort.by("id").descending();
+        };
+
+        org.springframework.data.domain.Pageable pageable =
+                org.springframework.data.domain.PageRequest.of(Math.max(page, 0), size, sortOrder);
+
+        final CompanyStatus finalStatus = parsedStatus;
+        final SubscriptionPlan finalPlan = parsedPlan;
+        final String searchLike = normalizedSearch != null ? "%" + normalizedSearch.toLowerCase() + "%" : null;
+
+        org.springframework.data.jpa.domain.Specification<CompanyEntity> spec = (root, query, cb) -> {
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            if (finalStatus != null) {
+                predicates.add(cb.equal(root.get("status"), finalStatus));
+            }
+            if (finalPlan != null) {
+                predicates.add(cb.equal(root.get("subscriptionPlan"), finalPlan));
+            }
+            if (searchLike != null) {
+                predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("companyName")), searchLike),
+                    cb.like(cb.lower(root.get("email")), searchLike)
+                ));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        org.springframework.data.domain.Page<CompanyEntity> pageResult =
+                companyRepository.findAll(spec, pageable);
+
+        long activeCount = companyRepository.countByStatus(CompanyStatus.ACTIVE);
+        long inactiveCount = companyRepository.countByStatus(CompanyStatus.INACTIVE);
+        long revenue = 0L;
+        for (var entry : PLAN_PRICES.entrySet()) {
+            if (entry.getValue() > 0) {
+                revenue += companyRepository.countBySubscriptionPlanAndStatus(entry.getKey(), CompanyStatus.ACTIVE)
+                        * entry.getValue();
+            }
+        }
+
+        return new com.hr.demo.hr.dto.SubscriptionPageResponse(
+                pageResult.getContent().stream().map(this::mapToResponse).toList(),
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                activeCount + inactiveCount,
+                activeCount,
+                inactiveCount,
+                revenue
+        );
     }
 }

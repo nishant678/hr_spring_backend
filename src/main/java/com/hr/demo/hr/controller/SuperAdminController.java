@@ -42,6 +42,17 @@ public class SuperAdminController {
         return superAdminService.getAllCompanies();
     }
 
+    @GetMapping("/subscriptions")
+    public com.hr.demo.hr.dto.SubscriptionPageResponse getSubscriptions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String plan,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "RECENT") String sort) {
+        return superAdminService.getSubscriptions(page, Math.min(Math.max(size, 1), 100), status, plan, search, sort);
+    }
+
     @PutMapping("/companies/{id}/permissions")
     public CompanyResponse updatePermissions(@PathVariable Long id,
             @Valid @RequestBody com.hr.demo.hr.dto.CompanyPermissionsRequest request) {
